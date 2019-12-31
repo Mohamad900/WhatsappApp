@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/verifyTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:text="Verify your phone number"
+        android:textSize="18dp"
+        android:textColor="#118C7E"
+        android:textStyle="bold"
+        android:layout_marginTop="20dp"
+        />
+
+    <TextView
+        android:id="@+id/smsTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/verifyTV"
+        android:text="@string/verify_phone_msg"
+        android:gravity="center"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        />
+
+    <TextView
+        android:id="@+id/verifySmsTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/verifyTV"
+        android:text="@string/verify_phone_msg2"
+        android:gravity="center"
+        android:visibility="invisible"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        />
+
+    <Spinner
+        android:id="@+id/countries"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/phoneRL"
+        android:layout_alignEnd="@+id/phoneRL"
+        android:layout_marginTop="20dp"
+        android:layout_below="@id/smsTV"
+        android:layout_centerHorizontal="true"
+        android:entries="@array/spinner_country">
+
+    </Spinner>
+
+    <EditText
+        android:id="@+id/verification_code_input"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/smsTV"
+        android:layout_marginStart="17dp"
+        android:layout_marginEnd="17dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/inputs"
+        android:padding="5dp"
+        android:layout_centerHorizontal="true"
+        android:hint="Write verification code here..."
+        android:textAllCaps="false"
+        android:textSize="15sp"
+        android:inputType="number"
+        android:textAlignment="center"
+        android:textStyle="bold"
+        android:visibility="invisible"
+        />
+
+
+    <Button
+        android:id="@+id/verify_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Verify"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/verification_code_input"
+        android:textAllCaps="false"
+        android:layout_marginStart="17dp"
+        android:layout_marginEnd="17dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/buttons"
+        android:textColor="@android:color/background_light"
+        android:textSize="19sp"
+        android:textAlignment="center"
+        android:textStyle="bold"
+        android:visibility="invisible"
+        />
+
+    <RelativeLayout
+        android:id="@+id/phoneRL"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/countries"
+        android:layout_centerHorizontal="true">
+
+        <EditText
+            android:id="@+id/countryCodeET"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:enabled="false"
+            android:textColor="#000000"
+            android:maxLength="4"/>
+
+        <EditText
+            android:id="@+id/phone_nnumber_input"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:layout_toRightOf="@id/countryCodeET"
+            android:hint="phone number"
+            />
+
+        <TextView
+            android:id="@+id/carrierChargesTV"
+            android:layout_below="@+id/phone_nnumber_input"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Carrier SMS charges may apply"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="50dp"
+            />
+
+
+
+
+    </RelativeLayout>
+
+    <Button
+        android:id="@+id/send_ver_code_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Next"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/btn_green_round_corners"
+        android:textColor="@color/white"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20dp"
+        />
+</RelativeLayout>

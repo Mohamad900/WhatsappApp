@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/greyish_white"
+    xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <LinearLayout android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:focusableInTouchMode="true"
+        >
+
+        <RelativeLayout
+            android:id="@+id/chat_row_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/greyish_white"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="16dp"
+            xmlns:android="http://schemas.android.com/apk/res/android" >
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/profile_image"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@drawable/profile"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="16dp"
+                />
+
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_action_add"
+                android:layout_alignEnd="@id/profile_image"
+                android:layout_alignBottom="@id/profile_image"
+                />
+
+
+            <TextView
+                android:id="@+id/tvName"
+                android:layout_toEndOf="@id/profile_image"
+                android:layout_toStartOf="@id/tvTime"
+                android:layout_width="wrap_content"
+                android:maxLines="1"
+                android:layout_marginTop="4dp"
+                android:layout_height="wrap_content"
+                android:text="@string/my_status"
+                android:textStyle="bold"
+                android:textColor="@color/text_color_light"
+                android:textSize="15sp"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tvName"
+                android:layout_toEndOf="@id/profile_image"
+                android:text="@string/tap_to_add_status_update"
+                android:ellipsize="end"
+                android:layout_marginEnd="6dp"
+                android:textColor="@color/mata_text_color_light"
+                android:maxLines="1"
+                android:layout_marginTop="1dp"
+                />
+
+        </RelativeLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:orientation="horizontal"
+            android:background="@color/divider_light"
+            />
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/divider_light"
+            android:textColor="@color/text_color_light"
+            android:text="Recent updates"
+            android:paddingStart="16dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:paddingEnd="16dp"
+            />
+
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvStatus"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:nestedScrollingEnabled="false"
+            />
+
+    </LinearLayout>
+
+
+</androidx.core.widget.NestedScrollView>
