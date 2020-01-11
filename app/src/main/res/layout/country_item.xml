@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+    <ImageView
+        android:id="@+id/countryImage"
+        android:layout_width="30dp"
+        android:layout_height="30dp"/>
+
+    <TextView
+        android:id="@+id/countryName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/black"
+        android:layout_toEndOf="@id/countryImage"
+        android:layout_marginStart="10dp"
+        android:textStyle="bold"
+        android:layout_marginTop="2dp"
+        android:textSize="16sp"
+        android:text="Vihaan"/>
+
+    <TextView
+        android:id="@+id/countryCode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="MOBILE"
+        android:layout_marginTop="2dp"
+        android:layout_alignParentEnd="true"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#2faaaaaa"
+        android:layout_below="@id/countryImage"
+        android:layout_marginTop="5dp"
+        />
+
+
+</RelativeLayout>
+

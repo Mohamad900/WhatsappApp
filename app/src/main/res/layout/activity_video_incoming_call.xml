@@ -1,9 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Activities.VideoIncomingCallActivity">
+    tools:context=".MainActivity">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <!--<LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:id="@+id/cPreview">
+    </LinearLayout>-->
+
+    <LinearLayout
+        android:id="@+id/localVideo"
+        android:layout_width="150dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_height="200dp"
+        android:visibility="invisible"
+        android:orientation="horizontal"
+        android:layout_margin="20dp"/>
+
+    <LinearLayout
+        android:id="@+id/remoteVideo"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:visibility="invisible"
+        android:orientation="horizontal"/>
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="WHATSAPP CALL"
+            android:textSize="16dp"
+            android:layout_margin="10dp"
+            android:layout_gravity="center_horizontal"
+            android:textColor="@color/white"
+            />
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/remoteUserProfile"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/pic"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="10dp"
+            />
+
+        <TextView
+            android:id="@+id/remoteUserName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="10dp"
+            android:text=""
+            android:textSize="28sp"/>
+
+        <TextView
+            android:id="@+id/callState"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="Ringing"
+            android:textSize="16sp"
+            android:textAllCaps="true"
+            />
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/bottom_call1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:gravity="center_horizontal"
+        android:padding="28dp">
+
+        <ImageView
+            android:id="@+id/hangupButton"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:padding="12dp"
+            android:background="@drawable/call_ended_icon_round_red"
+            android:src="@drawable/ic_call_end_black_24dp"
+            />
+        <ImageView
+            android:layout_toEndOf="@id/hangupButton"
+            android:id="@+id/answerButton"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:padding="14dp"
+            android:layout_marginStart="40dp"
+            android:background="@drawable/call_ended_icon_round_green"
+            android:src="@drawable/ic_call"
+            />
+
+
+    </RelativeLayout>
+
+</RelativeLayout>
+

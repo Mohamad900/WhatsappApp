@@ -12,15 +12,17 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="30dp"
         android:text="Welcome to WhatsApp"
-        android:textSize="32dp"
-        android:textColor="@color/colorPrimary"
+        android:textSize="28dp"
+        android:textColor="#128C7E"
         android:textStyle="bold" />
 
     <ImageView
         android:id="@+id/welcomeIV"
         android:layout_width="250dp"
         android:layout_height="250dp"
-        android:layout_centerInParent="true"
+        android:layout_above="@+id/agreeNContinueTV"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="40dp"
         android:layout_marginTop="10dp"
         android:src="@drawable/ill_eula" />
 
@@ -36,41 +38,47 @@
         android:gravity="center"
         android:text="@string/agree_n_continue" />
 
-    <!--
-        <Button
-            android:id="@+id/agreeNContinueBTN"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/agreeNContinueTV"
-            android:layout_centerHorizontal="true"
-            android:text="Agree AND Continue"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/btn_green_round_corners"
-            android:textColor="@color/white"
-            android:paddingLeft="30dp"
-            android:paddingRight="30dp"
-            android:paddingTop="-10dp"
-            android:paddingBottom="-10dp"
-            />
-            -->
 
     <TextView
         android:id="@+id/agreeNContinueTVBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_above="@+id/from"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="20dp"
+        android:layout_marginBottom="40dp"
         android:layout_marginTop="20dp"
         android:background="@drawable/btn_green_round_corners"
         android:paddingBottom="10dp"
-        android:paddingLeft="35dp"
-        android:paddingRight="35dp"
+        android:paddingLeft="57dp"
+        android:paddingRight="57dp"
+        android:textSize="15sp"
         android:paddingTop="10dp"
         android:text="Agree and Continue"
         android:textAllCaps="true"
         android:textColor="@color/white"
         android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/from"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="8dp"
+        android:gravity="center"
+        android:layout_above="@+id/facebook"
+        android:text="from" />
+
+    <TextView
+        android:id="@+id/facebook"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="16dp"
+        android:textColor="#25D366"
+        android:gravity="center"
+        android:letterSpacing="0.2"
+        android:text="FACEBOOK" />
 
 
 </RelativeLayout>

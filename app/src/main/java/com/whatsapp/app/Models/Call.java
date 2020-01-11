@@ -1,57 +1,87 @@
 package com.whatsapp.app.Models;
 
 public class Call {
-	
-	private String profilePic;
-	private String name;
-	private String time;
-	private int type;
-	
-	public static final int AUDIO = 0;
-	public static final int VIDEO = 1;
-	
-	public Call(String profilePic, String name, String time, int type) {
-		this.profilePic = profilePic;
-		this.name = name;
+
+	private String from, type, to, messageID, time, date, name,status;
+
+
+	public Call(){
+
+	}
+
+	public Call(String from, String type, String to, String messageID, String time, String date, String name, String status) {
+		this.from = from;
+		this.type = type;
+		this.to = to;
+		this.messageID = messageID;
 		this.time = time;
+		this.date = date;
+		this.name = name;
+		this.status = status;
+	}
+
+
+	public String getFrom() {
+		return from;
+	}
+
+	public void setFrom(String from) {
+		this.from = from;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
 		this.type = type;
 	}
-	
-	public Call(String name, String time, int type) {
-		this.name = name;
-		this.time = time;
-		this.type = type;
+
+	public String getTo() {
+		return to;
 	}
-	
-	public String getProfilePic() {
-		return profilePic;
+
+	public void setTo(String to) {
+		this.to = to;
 	}
-	
-	public void setProfilePic(String profilePic) {
-		this.profilePic = profilePic;
+
+	public String getMessageID() {
+		return messageID;
 	}
-	
-	public String getName() {
-		return name;
+
+	public void setMessageID(String messageID) {
+		this.messageID = messageID;
 	}
-	
-	public void setName(String name) {
-		this.name = name;
-	}
-	
+
 	public String getTime() {
 		return time;
 	}
-	
+
 	public void setTime(String time) {
 		this.time = time;
 	}
-	
-	public int getType() {
-		return type;
+
+	public String getDate() {
+		return date;
 	}
-	
-	public void setType(int type) {
-		this.type = type;
+
+	public void setDate(String date) {
+		this.date = date;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 }

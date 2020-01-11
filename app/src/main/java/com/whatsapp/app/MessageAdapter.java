@@ -1,6 +1,7 @@
 package com.whatsapp.app;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -14,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -43,11 +45,16 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     private List<Messages> userMessagesList;
     private FirebaseAuth mAuth;
     private DatabaseReference usersRef;
+    boolean isStoped = false;
     boolean isPaused = false;
+    boolean isPrepared = false;
+    Context context;
 
-    public MessageAdapter (List<Messages> userMessagesList)
+
+    public MessageAdapter (Context context, List<Messages> userMessagesList)
     {
         this.userMessagesList = userMessagesList;
+        this.context=context;
     }
 
 
@@ -56,9 +63,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         public TextView senderMessageText, receiverMessageText,timeReceiverTV,timeSenderTV,voice_duration;
         public RelativeLayout senderMsgRl, receiverMsgRl;
         //public CircleImageView receiverProfileImage;
-        public ImageView messageSenderPicture, messageReceiverPicture;
+        public ImageView messageSenderPicture, messageReceiverPicture,messageSenderDocument,messageReceiverDocument;
         RelativeLayout msg_audio;
-        SeekBar seekBar;
+        SmoothSeekBar seekBar;
         ImageView imgPlay;
 
 
@@ -79,6 +86,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             //receiverProfileImage = (CircleImageView) itemView.findViewById(R.id.message_profile_image);
             messageReceiverPicture = itemView.findViewById(R.id.message_receiver_image_view);
             messageSenderPicture = itemView.findViewById(R.id.message_sender_image_view);
+            messageSenderDocument = itemView.findViewById(R.id.message_receiver_document_view);
+            messageReceiverDocument = itemView.findViewById(R.id.message_sender_document_view);
         }
     }
 
@@ -89,8 +98,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     @Override
     public MessageViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i)
     {
-        View view = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.custom_messages_layout, viewGroup, false);
+        View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.custom_messages_layout, viewGroup, false);
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -133,6 +141,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         messageViewHolder.senderMsgRl.setVisibility(View.GONE);
         messageViewHolder.messageSenderPicture.setVisibility(View.GONE);
         messageViewHolder.messageReceiverPicture.setVisibility(View.GONE);
+        messageViewHolder.messageReceiverDocument.setVisibility(View.GONE);
+        messageViewHolder.messageSenderDocument.setVisibility(View.GONE);
         messageViewHolder.msg_audio.setVisibility(View.GONE);
 
 
@@ -141,7 +151,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             if (fromUserID.equals(messageSenderId))
             {
                 messageViewHolder.senderMsgRl.setVisibility(View.VISIBLE);
-
                 messageViewHolder.senderMessageText.setBackgroundResource(R.drawable.sender_messages_layout);
                 messageViewHolder.senderMessageText.setTextColor(Color.BLACK);
                 messageViewHolder.senderMessageText.setText(messages.getMessage());
@@ -151,7 +160,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             {
                 //messageViewHolder.receiverProfileImage.setVisibility(View.VISIBLE);
                 messageViewHolder.receiverMsgRl.setVisibility(View.VISIBLE);
-
                 messageViewHolder.receiverMessageText.setBackgroundResource(R.drawable.receiver_messages_layout);
                 messageViewHolder.receiverMessageText.setTextColor(Color.BLACK);
                 messageViewHolder.receiverMessageText.setText(messages.getMessage());
@@ -171,33 +179,35 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         }else if (fromMessageType.equals("pdf") || fromMessageType.equals("docx")) {
 
             if (fromUserID.equals(messageSenderId)){
-                messageViewHolder.messageSenderPicture.setVisibility((View.VISIBLE));
-                messageViewHolder.messageSenderPicture.setBackgroundResource(R.drawable.file);
-
-               /* messageViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(userMessagesList.get(i).getMessage()));
-                        messageViewHolder.itemView.getContext().startActivity(intent);
-                    }
-                });*/
-
+                messageViewHolder.messageSenderDocument.setVisibility((View.VISIBLE));
+                messageViewHolder.messageSenderDocument.setBackgroundResource(R.drawable.file);
 
             }else{
                 //messageViewHolder.receiverProfileImage.setVisibility((View.VISIBLE));
-                messageViewHolder.messageReceiverPicture.setVisibility((View.VISIBLE));
-                messageViewHolder.messageReceiverPicture.setBackgroundResource(R.drawable.file);
+                messageViewHolder.messageReceiverDocument.setVisibility((View.VISIBLE));
+                messageViewHolder.messageReceiverDocument.setBackgroundResource(R.drawable.file);
 
-               /* messageViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(userMessagesList.get(i).getMessage()));
-                        messageViewHolder.itemView.getContext().startActivity(intent);
-                    }
-                });*/
             }
 
         }else if (fromMessageType.equals("audio")) {
+
+            if (fromUserID.equals(messageSenderId)){
+                messageViewHolder.msg_audio.setVisibility((View.VISIBLE));
+                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+                params.addRule(RelativeLayout.ALIGN_PARENT_END);
+                params.setMargins(100, 10, 20, 10);
+                messageViewHolder.msg_audio.setLayoutParams(params);
+                messageViewHolder.msg_audio.setBackgroundColor(context.getResources().getColor(R.color.sender_bubble));
+
+            }else{
+                messageViewHolder.msg_audio.setVisibility((View.VISIBLE));
+                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+                params.addRule(RelativeLayout.ALIGN_PARENT_START);
+                params.setMargins(20, 10, 100, 10);
+                messageViewHolder.msg_audio.setLayoutParams(params);
+                messageViewHolder.msg_audio.setBackgroundColor(context.getResources().getColor(R.color.white));
+            }
+
 
             final MediaPlayer mPlayer = new MediaPlayer();
             try {
@@ -218,123 +228,94 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 e.printStackTrace();
             }
 
-            if (fromUserID.equals(messageSenderId)){
-                messageViewHolder.msg_audio.setVisibility((View.VISIBLE));
-                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-                params.addRule(RelativeLayout.ALIGN_PARENT_END);
-                params.setMargins(100, 10, 20, 10);
-                messageViewHolder.msg_audio.setLayoutParams(params);
-
-            }else{
-                messageViewHolder.msg_audio.setVisibility((View.VISIBLE));
-                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-                params.addRule(RelativeLayout.ALIGN_PARENT_START);
-                params.setMargins(20, 10, 100, 10);
-                messageViewHolder.msg_audio.setLayoutParams(params);
-            }
-
-        }
-
-        if(fromUserID.equals(messageSenderId)){
-
-            final MediaPlayer mPlayer = new MediaPlayer();
-            mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            try {
-                mPlayer.setDataSource(userMessagesList.get(i).getMessage());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
             messageViewHolder.imgPlay.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
-                    if(userMessagesList.get(i).getType().equals("audio")){
+                    final Handler mSeekbarUpdateHandler = new Handler();
+                    Runnable mUpdateSeekbar = new Runnable() {
+                        @Override
+                        public void run() {
 
-                      try {
+                            if(mPlayer.isPlaying()) {
+                                messageViewHolder.seekBar.setProgress(mPlayer.getCurrentPosition());
+                                String time = String.format("%02d:%02d",
+                                        TimeUnit.MILLISECONDS.toMinutes((long) mPlayer.getCurrentPosition()),
+                                        TimeUnit.MILLISECONDS.toSeconds((long) mPlayer.getCurrentPosition()) -
+                                                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((long) mPlayer.getCurrentPosition())));
 
-                          final Handler mSeekbarUpdateHandler = new Handler();
-                          Runnable mUpdateSeekbar = new Runnable() {
-                              @Override
-                              public void run() {
-                                  messageViewHolder.seekBar.setProgress(mPlayer.getCurrentPosition());
-                                  String time = String.format("%02d:%02d",
-                                          TimeUnit.MILLISECONDS.toMinutes((long)mPlayer.getCurrentPosition()),
-                                          TimeUnit.MILLISECONDS.toSeconds((long)mPlayer.getCurrentPosition()) -
-                                                  TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((long)mPlayer.getCurrentPosition())));
-
-                                  messageViewHolder.voice_duration.setText(time);
-                                  mSeekbarUpdateHandler.postDelayed(this, 1000);
-                              }
-                          };
-
-                        if(messageViewHolder.imgPlay.getDrawable().getConstantState() == messageViewHolder.itemView.getContext().getResources().getDrawable(R.drawable.ic_pause_circle_filled_black_24dp).getConstantState()){
-                            messageViewHolder.imgPlay.setImageResource(R.drawable.ic_play_circle_filled_black_24dp);
-                            mPlayer.pause();
-                            isPaused = true;
-                            //messageViewHolder.seekBar.setp
-
-                        }else{
-                            messageViewHolder.imgPlay.setImageResource(R.drawable.ic_pause_circle_filled_black_24dp);
-                            if(!isPaused) mPlayer.prepare();
-                            mPlayer.start();
-                            mSeekbarUpdateHandler.postDelayed(mUpdateSeekbar, 1000);
-                            //messageViewHolder.seekBar.setEnabled(true);
-
+                                messageViewHolder.voice_duration.setText(time);
+                                mSeekbarUpdateHandler.postDelayed(this, 500);
+                            }
                         }
+                    };
 
-                        messageViewHolder.seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                            @Override
-                            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                                try {
-                                    if (mPlayer.isPlaying() || mPlayer != null) {
-                                        if (fromUser)
-                                            mPlayer.seekTo(progress);
-                                    } else if (mPlayer == null) {
-                                        seekBar.setProgress(0);
-                                    }
-                                } catch (Exception e) {
-                                    seekBar.setEnabled(false);
-                                }
+                    if(messageViewHolder.imgPlay.getDrawable().getConstantState() == messageViewHolder.itemView.getContext().getResources().getDrawable(R.drawable.ic_pause_circle_filled_black_24dp).getConstantState()){
+                        messageViewHolder.imgPlay.setImageResource(R.drawable.ic_play_circle_filled_black_24dp);
+                        mPlayer.pause();
+                        isPaused = true;
+                        //messageViewHolder.seekBar.setp
 
+                    }else{
+                        messageViewHolder.imgPlay.setImageResource(R.drawable.ic_pause_circle_filled_black_24dp);
+                        if(!isPaused) {
+                            try {
+                                mPlayer.prepare();
+                            } catch (IOException e) {
+                                e.printStackTrace();
                             }
-
-                            @Override
-                            public void onStartTrackingTouch(SeekBar seekBar) {
-
-                            }
-
-                            @Override
-                            public void onStopTrackingTouch(SeekBar seekBar) {
-
-                            }
-                        });
-
-
-                            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                                @Override
-                                public void onCompletion(MediaPlayer mp) {
-                                    messageViewHolder.seekBar.setProgress(0);
-                                    mPlayer.stop();
-                                    isPaused=false;
-                                    messageViewHolder.imgPlay.setImageResource(R.drawable.ic_play_circle_filled_black_24dp);
-                                }
-                            });
-
-
-                        } catch (IOException e) {
-                            e.printStackTrace();
                         }
-
+                        mPlayer.start();
+                        mSeekbarUpdateHandler.postDelayed(mUpdateSeekbar, 50);
+                        //messageViewHolder.seekBar.setEnabled(true);
 
                     }
 
+                    messageViewHolder.seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                        @Override
+                        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                            try {
+                                if (mPlayer.isPlaying() && fromUser) {
+                                        mPlayer.seekTo(progress);
+                                }
+                            } catch (Exception e) {
+                                //seekBar.setEnabled(false);
+                            }
+
+                        }
+
+                        @Override
+                        public void onStartTrackingTouch(SeekBar seekBar) {
+
+                        }
+
+                        @Override
+                        public void onStopTrackingTouch(SeekBar seekBar) {
+
+                        }
+                    });
+
+
+                    mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                        @Override
+                        public void onCompletion(MediaPlayer mp) {
+                            //messageViewHolder.seekBar.setProgress(0);
+                            //mp.seekTo(0);
+                            mPlayer.stop();
+                            isPaused=false;
+                            mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar);
+                            messageViewHolder.imgPlay.setImageResource(R.drawable.ic_play_circle_filled_black_24dp);
+                        }
+                    });
+
                 }
             });
+
         }
 
 
         if(fromUserID.equals(messageSenderId)){
+
             messageViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

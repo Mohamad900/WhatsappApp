@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <corners android:radius="5dp" />
-
-    <gradient android:angle="270"
-        android:centerColor="#25D366"
-        android:endColor="#25D366"
-        android:startColor="#25D366" />
-</shape>
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:color="?android:colorControlHighlight"
+    tools:targetApi="lollipop">
+<item>
+    <shape android:shape="rectangle">
+        <corners android:radius="2dp" />
+        <solid android:color="#25D366"/>
+    </shape>
+</item>
+</ripple>

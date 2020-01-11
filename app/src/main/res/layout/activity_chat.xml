@@ -3,6 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:emojicon="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/default_wallpaper"
@@ -83,7 +85,7 @@
                         android:ellipsize="end"
                         android:maxLines="1"
                         android:text="last seen 1 hour ago"
-                        android:textSize="12sp" />
+                        android:textSize="9sp" />
 
 
                 </LinearLayout>
@@ -115,20 +117,22 @@
             android:layout_marginTop="5dp"
             android:layout_toStartOf="@+id/send_message_btn">
 
-            <ImageButton
+            <ImageView
+                android:id="@+id/emojiButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@android:color/transparent"
-                android:src="@drawable/input_emoji"
+                android:src="@drawable/smiley"
                 android:layout_gravity="center"
                 android:layout_marginStart="5dp"/>
 
-            <EditText
+            <hani.momanii.supernova_emoji_library.Helper.EmojiconEditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:backgroundTint="@android:color/transparent"
                 android:hint="Type a message"
+                emojicon:emojiconSize="28sp"
                 android:id="@+id/input_message" />
 
             <ImageButton
@@ -141,6 +145,7 @@
                 android:src="@drawable/ib_attach"/>
 
             <ImageButton
+                android:id="@+id/camera"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@android:color/transparent"
@@ -190,5 +195,19 @@
         android:background="@drawable/recv_bg_mic"
         android:scaleType="centerInside" />
 
+    <include
+        layout="@layout/media_attach_menu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:layout_above="@+id/chat_linear_layout"/>
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/overlay"
+        android:layout_alignParentBottom="true"
+        android:visibility="gone"
+        android:onClick="overlayClick"/>
 
 </RelativeLayout>

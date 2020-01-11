@@ -9,11 +9,13 @@ import io.michaelrocks.libphonenumber.android.NumberParseException;
 import io.michaelrocks.libphonenumber.android.PhoneNumberUtil;
 import io.michaelrocks.libphonenumber.android.Phonenumber;
 
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.Menu;
+import android.view.View;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -26,6 +28,7 @@ import com.whatsapp.app.Models.User;
 import com.whatsapp.app.R;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class UserListActivity extends AppCompatActivity {
 
@@ -58,6 +61,13 @@ public class UserListActivity extends AppCompatActivity {
         phoneNumberUtil = PhoneNumberUtil.createInstance(this);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
     }
 
     @Override
@@ -68,6 +78,10 @@ public class UserListActivity extends AppCompatActivity {
     }
 
     private void getContactList(){
+
+        SharedPreferences prefs = getSharedPreferences("UserProfile", MODE_PRIVATE);
+        String phoneNumber = prefs.getString("phoneNumber", null);//"No name defined" is the default value.
+        HashSet<String> phoneNumbersSet = new HashSet<>();
 
         Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
         while(phones.moveToNext()){
@@ -82,9 +96,16 @@ public class UserListActivity extends AppCompatActivity {
             if(String.valueOf(phone.charAt(0)).equals("+"))
                 phone = extractCountryCodeFromPhoneNumber(phone);
 
-            checkAndGetUserDetails(phone);
+            if(!phone.equals(phoneNumber)) phoneNumbersSet.add(phone);
+
         }
+
+        for (String contactsPhoneNumber : phoneNumbersSet) {
+            checkAndGetUserDetails(contactsPhoneNumber);
+        }
+
     }
+
 
     private void checkAndGetUserDetails(String phoneNumber) {
         DatabaseReference mUserDB = FirebaseDatabase.getInstance().getReference().child("Users");

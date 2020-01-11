@@ -45,8 +45,17 @@ dependencies {
     implementation 'io.michaelrocks:libphonenumber-android:8.10.16'
     implementation 'com.devlomi.record-view:record-view:2.0.1'
     implementation 'com.mcxiaoke.volley:library:1.0.19'
+    implementation 'com.github.hani-momanii:SuperNova-Emoji:1.1'
     implementation(name: 'sinch-android-rtc', version: '+', ext: 'aar')
+    implementation 'com.github.mukeshsolanki:android-otpview-pinview:2.0.0'
+    implementation 'com.github.msayan:otp-view:d9be8c5c26'
+
+    implementation 'com.google.code.gson:gson:2.8.6'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
+    // Skip this if you don't want to use integration libraries or configure Glide.
+    implementation 'com.guardanis:imageloader:2.0.0'
+
+
 }

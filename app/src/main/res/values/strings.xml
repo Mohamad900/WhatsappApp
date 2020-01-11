@@ -6,18 +6,27 @@
     <string name="calls">Calls</string>
     <string name="my_status">My status</string>
     <string name="tap_to_add_status_update">Tap to add status update</string>
-    <string name="agree_n_continue">Tap "Agree and continue" to accept the WhatsApp Terms of Service and Privacy Policy.</string>
+    <string name="agree_n_continue">Read our Privacy Policy. Tap "Agree and continue" to accept the Terms of Service.</string>
 
     //verify screen
     <string name="verify_phone_msg">WhatsApp will send an SMS message to verify your phone number. Enter your country code and phone number.</string>
-    <string name="verify_phone_msg2">Waiting to automatically detect an SMS.</string>
+    <string name="verify_phone_msg2">Waiting to automatically detect an SMS</string>
 
+    <!--
     <string-array name="spinner_country">
         <item>India</item>
     </string-array>
+-->
 
     // create user
     <string name="profile_info_msg">Please provide your name and an optional profile photo</string>
 
+    <string name="content_description" />
+    <string name="menu_document">Document</string>
+    <string name="menu_camera">Camera</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="menu_audio">Audio</string>
+    <string name="menu_location">Location</string>
+    <string name="menu_contact">Contact</string>
 
 </resources>

@@ -2,7 +2,7 @@
 <resources>
     <color name="colorPrimary">#006257</color>
     <color name="colorPrimaryDark">#005048</color>
-    <color name="colorAccent">#0aea07</color>
+    <color name="colorAccent">#006257</color>
 
     <color name="white">#ffffff</color>
     <color name="tab_unselected">#7cada7</color>
@@ -13,7 +13,11 @@
 
 
     <color name="black">#000000</color>
+    <color name="grey">#9E9E9E</color>
     <color name="tab_unselected_dark">#7e7e7e</color>
     <color name="meta_text_color_dark">#bdbdbd</color>
+
+    <color name="sender_bubble">#E0FFC7</color>
+    <color name="receiver_bubble">#E0FFC7</color>
 
 </resources>

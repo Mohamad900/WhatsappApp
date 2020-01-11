@@ -33,6 +33,7 @@ public class IncomingCallActivity extends AppCompatActivity {
         bottom_call1 = findViewById(R.id.bottom_call1);
         bottom_call2 = findViewById(R.id.bottom_call2);
 
+        SinchManager.incomingCallObject.addCallListener(new SinchCallListener());
 
         answer_call_icon.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -41,7 +42,6 @@ public class IncomingCallActivity extends AppCompatActivity {
                 bottom_call1.setVisibility(View.INVISIBLE);
                 bottom_call2.setVisibility(View.VISIBLE);
                 end_call_icon2.setVisibility(View.VISIBLE);
-                SinchManager.incomingCallObject.addCallListener(new SinchCallListener());
             }
         });
 

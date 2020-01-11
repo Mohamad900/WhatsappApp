@@ -51,7 +51,7 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onClick(View view)
             {
-                SendUserToLoginActivity();
+                //SendUserToLoginActivity();
             }
         });
 
@@ -130,11 +130,11 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
 
-    private void SendUserToLoginActivity()
+/*    private void SendUserToLoginActivity()
     {
         Intent loginIntent = new Intent(RegisterActivity.this, LoginActivity.class);
         startActivity(loginIntent);
-    }
+    }*/
 
 
     private void SendUserToMainActivity()

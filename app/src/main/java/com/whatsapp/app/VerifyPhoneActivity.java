@@ -2,13 +2,20 @@ package com.whatsapp.app;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Message;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -20,6 +27,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
+import com.firebase.ui.database.FirebaseIndexArray;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseException;
@@ -28,6 +36,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.gson.Gson;
+import com.hololo.library.otpview.OTPListener;
+import com.hololo.library.otpview.OTPView;
+import com.whatsapp.app.Activities.CountryActivity;
 import com.whatsapp.app.Models.Country;
 
 import org.json.JSONArray;
@@ -40,15 +52,23 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class VerifyPhoneActivity extends AppCompatActivity
 {
-    private Button SendVerificationCodeButton, VerifyButton;
-    private EditText InputPhoneNumber, InputVerificationCode,countryCodeET;
-    TextView carrierChargesTV,verifyTV,smsTV,verifySmsTV;
-    Spinner countriesSpinner;
-    RelativeLayout phoneRL;
+    private Button SendVerificationCodeButton;
+    private EditText InputPhoneNumber,countryCodeET;
+    OTPView InputVerificationCode;
+    TextView carrierChargesTV,verifyTV,smsTV,verifySmsTV,resend_timer;
+    TextView countriesSpinner;
+    LinearLayout phoneRL;
+    TextView digit_code;
+    RelativeLayout resend;
+    LinearLayout resendCall;
+    String fullNumber;
+    ImageView imgSMS;
+    TextView resend_text;
 
     private PhoneAuthProvider.OnVerificationStateChangedCallbacks callbacks;
     private FirebaseAuth mAuth;
@@ -57,10 +77,6 @@ public class VerifyPhoneActivity extends AppCompatActivity
 
     private String mVerificationId;
     private PhoneAuthProvider.ForceResendingToken mResendToken;
-    private String countriesUrl = "https://restcountries.eu/rest/v2/all";
-    List<Country> CountryList;
-    List<String> CountriesName;
-    ArrayAdapter<String> adapter;
     String phoneNumber;
     String countryCode;
 
@@ -70,42 +86,71 @@ public class VerifyPhoneActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_phone_login);
 
-
         mAuth = FirebaseAuth.getInstance();
-        CountryList = new ArrayList<>();
-        CountriesName = new ArrayList<>();
 
         SendVerificationCodeButton = (Button) findViewById(R.id.send_ver_code_button);
-        VerifyButton = (Button) findViewById(R.id.verify_button);
         verifyTV = findViewById(R.id.verifyTV);
+        imgSMS = findViewById(R.id.imgSMS);
+        resend_text = findViewById(R.id.resend_text);
+        resend_timer =findViewById(R.id.resend_timer);
+        resendCall = findViewById(R.id.resendCall);
+        resend = findViewById(R.id.resend);
+        digit_code = findViewById(R.id.digit_code);
         smsTV =  findViewById(R.id.smsTV);
         verifySmsTV = findViewById(R.id.verifySmsTV);
         carrierChargesTV = findViewById(R.id.carrierChargesTV);
         InputPhoneNumber = findViewById(R.id.phone_nnumber_input);
         countryCodeET = findViewById(R.id.countryCodeET);
-        InputVerificationCode = (EditText) findViewById(R.id.verification_code_input);
+        InputVerificationCode = findViewById(R.id.verification_code_input);
         countriesSpinner = findViewById(R.id.countries);
         phoneRL = findViewById(R.id.phoneRL);
         loadingBar = new ProgressDialog(this);
 
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,CountriesName);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        countriesSpinner.setAdapter(adapter);
+        resend.setEnabled(false);
 
-        countriesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+        InputVerificationCode.setListener(new OTPListener() {
             @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                Country country= CountryList.get(i);
-                countryCodeET.setText("+" + country.getCode());
+            public void otpFinished(String otp) {
+                loadingBar.setTitle("");
+                loadingBar.setMessage("Verifying...");
+                loadingBar.setCanceledOnTouchOutside(false);
+                loadingBar.show();
+
+                PhoneAuthCredential credential = PhoneAuthProvider.getCredential(mVerificationId, otp);
+                signInWithPhoneAuthCredential(credential);
             }
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
+        });
 
+        countriesSpinner.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(VerifyPhoneActivity.this, CountryActivity.class);
+                startActivityForResult(intent, 1);
             }
         });
 
 
-        GetCountriesAndCodes();
+        resend.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+            @Override
+            public void onClick(View v) {
+                //Toast.makeText(VerifyPhoneActivity.this,"p",Toast.LENGTH_SHORT).show();
+                resend.setEnabled(false);
+                resend_text.setTextColor(getResources().getColor(R.color.grey));
+                imgSMS.setBackgroundTintList(getResources().getColorStateList(R.color.grey));
+                loadingBar.setMessage("Sending SMS...");
+                loadingBar.setCanceledOnTouchOutside(false);
+                loadingBar.show();
+
+                PhoneAuthProvider.getInstance().verifyPhoneNumber(
+                        fullNumber,        // Phone number to verify
+                        60,                 // Timeout duration
+                        TimeUnit.SECONDS,   // Unit of timeout
+                        VerifyPhoneActivity.this,               // Activity (for callback binding)
+                        callbacks);        // OnVerificationStateChangedCallbacks
+            }
+        });
 
         SendVerificationCodeButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -113,7 +158,7 @@ public class VerifyPhoneActivity extends AppCompatActivity
             {
                 countryCode = countryCodeET.getText().toString();
                 phoneNumber = InputPhoneNumber.getText().toString();
-                String fullNumber = countryCode + phoneNumber;
+                fullNumber = countryCode + phoneNumber;
 
                 if (TextUtils.isEmpty(countryCode))
                 {
@@ -125,8 +170,7 @@ public class VerifyPhoneActivity extends AppCompatActivity
 
                 }else
                 {
-                    loadingBar.setTitle("Phone Verification");
-                    loadingBar.setMessage("please wait, while we are authenticating your phone...");
+                    loadingBar.setMessage("Connecting...");
                     loadingBar.setCanceledOnTouchOutside(false);
                     loadingBar.show();
 
@@ -139,34 +183,6 @@ public class VerifyPhoneActivity extends AppCompatActivity
                 }
             }
         });
-
-
-        VerifyButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view)
-            {
-                SendVerificationCodeButton.setVisibility(View.INVISIBLE);
-                InputPhoneNumber.setVisibility(View.INVISIBLE);
-
-                String verificationCode = InputVerificationCode.getText().toString();
-
-                if (TextUtils.isEmpty(verificationCode))
-                {
-                    Toast.makeText(VerifyPhoneActivity.this, "Please write verification code first...", Toast.LENGTH_SHORT).show();
-                }
-                else
-                {
-                    loadingBar.setTitle("Verification Code");
-                    loadingBar.setMessage("please wait, while we are verifying verification code...");
-                    loadingBar.setCanceledOnTouchOutside(false);
-                    loadingBar.show();
-
-                    PhoneAuthCredential credential = PhoneAuthProvider.getCredential(mVerificationId, verificationCode);
-                    signInWithPhoneAuthCredential(credential);
-                }
-            }
-        });
-
 
         callbacks = new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
             @Override
@@ -187,9 +203,10 @@ public class VerifyPhoneActivity extends AppCompatActivity
                 carrierChargesTV.setVisibility(View.VISIBLE);
                 smsTV.setVisibility(View.VISIBLE);
 
-                VerifyButton.setVisibility(View.INVISIBLE);
                 InputVerificationCode.setVisibility(View.INVISIBLE);
                 verifySmsTV.setVisibility(View.INVISIBLE);
+                digit_code.setVisibility(View.INVISIBLE);
+                resendCall.setVisibility(View.INVISIBLE);
 
             }
 
@@ -201,7 +218,7 @@ public class VerifyPhoneActivity extends AppCompatActivity
                 mResendToken = token;
 
                 loadingBar.dismiss();
-                Toast.makeText(VerifyPhoneActivity.this, "Code has been sent, please check and verify...", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(VerifyPhoneActivity.this, "Code has been sent, please check and verify...", Toast.LENGTH_SHORT).show();
 
                 SendVerificationCodeButton.setVisibility(View.INVISIBLE);
                 phoneRL.setVisibility(View.INVISIBLE);
@@ -209,63 +226,52 @@ public class VerifyPhoneActivity extends AppCompatActivity
                 carrierChargesTV.setVisibility(View.INVISIBLE);
                 smsTV.setVisibility(View.INVISIBLE);
 
-                VerifyButton.setVisibility(View.VISIBLE);
                 InputVerificationCode.setVisibility(View.VISIBLE);
                 verifySmsTV.setVisibility(View.VISIBLE);
-
+                digit_code.setVisibility(View.VISIBLE);
+                resendCall.setVisibility(View.VISIBLE);
+                verifySmsTV.setText("Waiting to automatically detect an SMS sent to "+countryCode+ phoneNumber +".");
+                startCountDownTimer();
             }
         };
     }
 
-    private void GetCountriesAndCodes() {
-        JsonArrayRequest req = new JsonArrayRequest(countriesUrl, new Response.Listener<JSONArray>() {
-            @Override
-            public void onResponse(JSONArray response) {
-                        //if (progressDialog.isShowing())
-                        //    progressDialog.dismiss();
 
-                        // Parsing json response and iterate over each JSON object
-                        //Log.d(TAG, "data:" + responseText);
-                        try {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1) {
+            if(resultCode == RESULT_OK) {
+                String code = data.getStringExtra("countryCode");
+                String name = data.getStringExtra("countryName");
 
-                            for (int i = 0; i < response.length(); i++) {
+                countriesSpinner.setText(name);
+                countryCodeET.setText("+ "+code);
 
-                                JSONObject jsonobject = response.getJSONObject(i);
-                                String name = jsonobject.getString("name");
-                                CountriesName.add(name);
-                                JSONArray codes = jsonobject.getJSONArray("callingCodes");
-
-                                String code="";
-                                if(codes.length ()> 0){
-                                    for(int j = 0;j<codes.length();j++){
-
-                                        code = codes.getString(j);
-                                        break;
-                                    }
-                                }
-                                Country countryObj = new Country(name , code);
-                                CountryList.add(countryObj);
-                            }
-                            adapter.notifyDataSetChanged();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Toast.makeText(getApplicationContext(),
-                                    "Error: " + e.getMessage(),
-                                    Toast.LENGTH_LONG).show();
-                        }
-
-                    }
-                },
-                new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            Toast.makeText(VerifyPhoneActivity.this,error.getMessage(),Toast.LENGTH_LONG).show();
-                        }
-                });
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-        requestQueue.add(req);
+            }
+        }
     }
 
+    private void startCountDownTimer(){
+
+        new CountDownTimer(60000, 1000) {
+
+            public void onTick(long millisUntilFinished) {
+                resend_timer.setText("00:"+millisUntilFinished / 1000);
+                //here you can have your logic to set text to edittext
+            }
+
+            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+            public void onFinish() {
+                //mTextField.setText("done!");
+                resend.setEnabled(true);
+                resend_text.setTextColor(getResources().getColor(R.color.colorPrimary));
+                imgSMS.setBackgroundTintList(getResources().getColorStateList(R.color.colorPrimary));
+
+            }
+
+        }.start();
+
+    }
 
     private void signInWithPhoneAuthCredential(PhoneAuthCredential credential) {
         mAuth.signInWithCredential(credential)
@@ -287,7 +293,7 @@ public class VerifyPhoneActivity extends AppCompatActivity
                                             if (task.isSuccessful())
                                             {
                                                 loadingBar.dismiss();
-                                                Toast.makeText(VerifyPhoneActivity.this, "Profile Created Successfully...", Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(VerifyPhoneActivity.this, "User Created Successfully...", Toast.LENGTH_SHORT).show();
                                                 SendUserToProfileInfoActivity();
                                             }
                                             else
@@ -309,11 +315,13 @@ public class VerifyPhoneActivity extends AppCompatActivity
                 });
     }
 
-
-
-
     private void SendUserToProfileInfoActivity()
     {
+
+        SharedPreferences.Editor editor = getSharedPreferences("UserProfile", MODE_PRIVATE).edit();
+        editor.putString("phoneNumber", phoneNumber);
+        editor.apply();
+
         Intent mainIntent = new Intent(VerifyPhoneActivity.this, ProfileInfoActivity.class);
         startActivity(mainIntent);
         finish();

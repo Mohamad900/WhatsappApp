@@ -1,6 +1,9 @@
 package com.whatsapp.app;
 
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,6 +12,7 @@ import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaRecorder;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.Editable;
@@ -20,7 +24,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewAnimationUtils;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -33,6 +40,9 @@ import com.devlomi.record_view.OnRecordClickListener;
 import com.devlomi.record_view.OnRecordListener;
 import com.devlomi.record_view.RecordButton;
 import com.devlomi.record_view.RecordView;
+import com.fxn.pix.Options;
+import com.fxn.pix.Pix;
+import com.fxn.utility.ImageQuality;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -62,6 +72,8 @@ import com.sinch.android.rtc.calling.CallListener;
 import com.squareup.picasso.Picasso;
 import com.whatsapp.app.Activities.IncomingCallActivity;
 import com.whatsapp.app.Activities.OutgoingCallActivity;
+import com.whatsapp.app.Activities.VideoOutgoingCallActivity;
+import com.whatsapp.app.Fragments.StatusFragment;
 import com.whatsapp.app.Utils.SinchManager;
 
 import java.io.File;
@@ -76,6 +88,7 @@ import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -84,6 +97,8 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
+import hani.momanii.supernova_emoji_library.Actions.EmojIconActions;
+import hani.momanii.supernova_emoji_library.Helper.EmojiconEditText;
 
 public class ChatActivity extends AppCompatActivity
 {
@@ -93,6 +108,7 @@ public class ChatActivity extends AppCompatActivity
 
     private TextView userName, userLastSeen;
     private CircleImageView userImage;
+    private ImageView emojiButton;
 
     private Toolbar toolbar;
     private FirebaseAuth mAuth;
@@ -100,7 +116,7 @@ public class ChatActivity extends AppCompatActivity
 
     private ImageButton  SendFilesButton;
     RecordButton SendMessageButton;
-    private EditText MessageInputText;
+    private EmojiconEditText MessageInputText;
     LinearLayout chat_linear_layout;
 
     private final List<Messages> messagesList = new ArrayList<>();
@@ -109,19 +125,30 @@ public class ChatActivity extends AppCompatActivity
     private RecyclerView userMessagesList;
     ProgressDialog loadingBar;
     RecordView recordView;
+    ImageButton camera;
 
     private String saveCurrentTime, saveCurrentDate;
     String checker="", myUrl="";
     StorageTask uploadTask;
     Uri fileUri;
+    ArrayList<String> selectedImages = new ArrayList<>();
+
 
     private MediaRecorder recorder = null;
     private static String fileName = null;
     private static final String LOG_TAG = "AudioRecordTest";
     String messagePushIDAudio = null;
-    Call call;
-    SinchClient sinchClient;
 
+    private View theMenu;
+    private View menu1;
+    private View menu2;
+    private View menu3;
+    private View menu4;
+    private View menu5;
+    private View menu6;
+
+    private boolean menuOpen = false;
+    private View overlay;
 
 
     @Override
@@ -145,6 +172,20 @@ public class ChatActivity extends AppCompatActivity
         userName.setText(messageReceiverName);
         Picasso.get().load(messageReceiverImage).placeholder(R.drawable.profile_image).into(userImage);
 
+        theMenu = findViewById(R.id.the_menu);
+        menu1 = findViewById(R.id.menu1);
+        menu2 = findViewById(R.id.menu2);
+        menu3 = findViewById(R.id.menu3);
+        menu4 = findViewById(R.id.menu4);
+        menu5 = findViewById(R.id.menu5);
+        menu6 = findViewById(R.id.menu6);
+
+        View menu_attachment_document = findViewById(R.id.menu_attachment_document);
+        View menu_attachment_camera = findViewById(R.id.menu_attachment_camera);
+        View menu_attachment_gallery = findViewById(R.id.menu_attachment_gallery);
+
+        overlay = findViewById(R.id.overlay);
+
 
         SendMessageButton.setOnRecordClickListener(new OnRecordClickListener() {
             @Override
@@ -161,6 +202,59 @@ public class ChatActivity extends AppCompatActivity
         DisplayLastSeen();
 
         SendFilesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!menuOpen) {
+                    revealMenu();
+                } else {
+                    hideMenu();
+                }
+            }
+        });
+
+        menu_attachment_document.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hideMenu();
+                checker = "pdf";
+                Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                intent.setType("application/pdf");
+                startActivityForResult(intent.createChooser(intent, "Select PDF File "),438);
+            }
+        });
+
+        menu_attachment_gallery.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hideMenu();
+                checker = "image";
+                Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                intent.setType("image/*");
+                startActivityForResult(intent.createChooser(intent, "Select Image "),438);
+            }
+        });
+
+        menu_attachment_camera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                checker = "image";
+                hideMenu();
+                Options options = Options.init()
+                        .setRequestCode(100)
+                        .setCount(30)
+                        .setFrontfacing(false)
+                        .setImageQuality(ImageQuality.LOW)
+                        //.setPreSelectedUrls(selectedImages)
+                        .setScreenOrientation(Options.SCREEN_ORIENTATION_PORTRAIT)
+                        .setPath("/akshay/new");
+
+                Pix.start(ChatActivity.this, options);
+            }
+        });
+
+        /*SendFilesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 CharSequence options[] = new CharSequence[]{
@@ -201,7 +295,7 @@ public class ChatActivity extends AppCompatActivity
                 });
                 builder.show();
             }
-        });
+        });*/
 
         RootRef.child("Messages").child(messageSenderID).child(messageReceiverID)
                 .addChildEventListener(new ChildEventListener() {
@@ -240,10 +334,161 @@ public class ChatActivity extends AppCompatActivity
 
     }
 
+    public void overlayClick(View v) {
+        hideMenu();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (menuOpen) {
+            hideMenu();
+        } else {
+            finishAfterTransition();
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public void revealMenu() {
+        menuOpen = true;
+
+        theMenu.setVisibility(View.INVISIBLE);
+        int cx = theMenu.getRight() - 200;
+        int cy = theMenu.getTop();
+        int finalRadius = Math.max(theMenu.getWidth(), theMenu.getHeight());
+        Animator anim =
+                ViewAnimationUtils.createCircularReveal(theMenu, cx, cy, 0, finalRadius);
+        anim.setDuration(600);
+        theMenu.setVisibility(View.VISIBLE);
+        overlay.setVisibility(View.VISIBLE);
+        anim.start();
+
+
+        // Animate The Icons One after the other, I really would like to know if there is any
+        // simpler way to do it
+        Animation popeup1 = AnimationUtils.loadAnimation(this, R.anim.popeup);
+        Animation popeup2 = AnimationUtils.loadAnimation(this, R.anim.popeup);
+        Animation popeup3 = AnimationUtils.loadAnimation(this, R.anim.popeup);
+        Animation popeup4 = AnimationUtils.loadAnimation(this, R.anim.popeup);
+        Animation popeup5 = AnimationUtils.loadAnimation(this, R.anim.popeup);
+        Animation popeup6 = AnimationUtils.loadAnimation(this, R.anim.popeup);
+        popeup1.setStartOffset(50);
+        popeup2.setStartOffset(100);
+        popeup3.setStartOffset(150);
+        popeup4.setStartOffset(200);
+        popeup5.setStartOffset(250);
+        popeup6.setStartOffset(300);
+        menu1.startAnimation(popeup1);
+        menu2.startAnimation(popeup2);
+        menu3.startAnimation(popeup3);
+        menu4.startAnimation(popeup4);
+        menu5.startAnimation(popeup5);
+        menu6.startAnimation(popeup6);
+
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public void hideMenu() {
+        menuOpen = false;
+        int cx = theMenu.getRight() - 200;
+        int cy = theMenu.getTop();
+        int initialRadius = theMenu.getWidth();
+        Animator anim = ViewAnimationUtils.createCircularReveal(theMenu, cx, cy, initialRadius, 0);
+        anim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                theMenu.setVisibility(View.INVISIBLE);
+                theMenu.setVisibility(View.GONE);
+                overlay.setVisibility(View.INVISIBLE);
+                overlay.setVisibility(View.GONE);
+            }
+        });
+        anim.start();
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == 100 && resultCode == Activity.RESULT_OK) {
+
+            selectedImages = data.getStringArrayListExtra(Pix.IMAGE_RESULTS);
+
+            for(int i=0;i<selectedImages.size();i++){
+
+                Uri fileUri = Uri.fromFile(new File(selectedImages.get(i)));
+
+                StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("Image Files");
+
+                final String messageSenderRef = "Messages/" + messageSenderID + "/" + messageReceiverID;
+                final String messageReceiverRef = "Messages/" + messageReceiverID + "/" + messageSenderID;
+
+                DatabaseReference userMessageKeyRef = RootRef.child("Messages")
+                        .child(messageSenderID).child(messageReceiverID).push();
+
+                final String messagePushID = userMessageKeyRef.getKey();
+                final StorageReference filePath = storageReference.child(messagePushID + "." + "jpg");
+
+                filePath.putFile(fileUri).continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                    @Override
+                    public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                        if (!task.isSuccessful()){
+                            throw task.getException();
+                        }
+                        return filePath.getDownloadUrl();
+                    }
+                }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Uri> task) {
+
+                        if(task.isSuccessful()){
+                            Uri downloadUrl = task.getResult();
+                            myUrl = downloadUrl.toString();
+
+                            Map messageTextBody = new HashMap();
+                            messageTextBody.put("message", myUrl);
+                            messageTextBody.put("name", fileUri.getLastPathSegment());
+                            messageTextBody.put("type", checker);
+                            messageTextBody.put("from", messageSenderID);
+                            messageTextBody.put("to", messageReceiverID);
+                            messageTextBody.put("messageID", messagePushID);
+                            messageTextBody.put("time", saveCurrentTime);
+                            messageTextBody.put("date", saveCurrentDate);
+
+                            Map messageBodyDetails = new HashMap();
+                            messageBodyDetails.put(messageSenderRef + "/" + messagePushID, messageTextBody);
+                            messageBodyDetails.put( messageReceiverRef + "/" + messagePushID, messageTextBody);
+
+                            RootRef.updateChildren(messageBodyDetails).addOnCompleteListener(new OnCompleteListener() {
+                                @Override
+                                public void onComplete(@NonNull Task task)
+                                {
+                                    if (task.isSuccessful())
+                                    {
+                                        loadingBar.dismiss();
+                                        Toast.makeText(ChatActivity.this, "Message Sent Successfully...", Toast.LENGTH_SHORT).show();
+                                    }
+                                    else
+                                    {
+                                        loadingBar.dismiss();
+                                        Toast.makeText(ChatActivity.this, "Error", Toast.LENGTH_SHORT).show();
+                                    }
+                                    MessageInputText.setText("");
+                                }
+                            });
+
+
+                        }
+
+                    }
+                });
+
+
+            }
+
+        }
+
+
 
         if(requestCode ==438 && resultCode == RESULT_OK && data!=null && data.getData() !=null){
 
@@ -466,13 +711,16 @@ public class ChatActivity extends AppCompatActivity
         userLastSeen = (TextView) findViewById(R.id.custom_user_last_seen);
         userImage = (CircleImageView) findViewById(R.id.custom_profile_image);
         recordView = (RecordView) findViewById(R.id.record_view);
+        emojiButton = findViewById(R.id.emojiButton);
         chat_linear_layout = findViewById(R.id.chat_linear_layout);
+        RelativeLayout rootView = findViewById(R.id.rootView);
 
         SendMessageButton = (RecordButton) findViewById(R.id.send_message_btn);
         SendFilesButton = (ImageButton) findViewById(R.id.send_files_btn);
-        MessageInputText = (EditText) findViewById(R.id.input_message);
+        MessageInputText = findViewById(R.id.input_message);
+        camera = findViewById(R.id.camera);
 
-        messageAdapter = new MessageAdapter(messagesList);
+        messageAdapter = new MessageAdapter(ChatActivity.this, messagesList);
         userMessagesList = (RecyclerView) findViewById(R.id.private_messages_list_of_users);
         linearLayoutManager = new LinearLayoutManager(this);
         userMessagesList.setLayoutManager(linearLayoutManager);
@@ -487,14 +735,33 @@ public class ChatActivity extends AppCompatActivity
         SimpleDateFormat currentTime = new SimpleDateFormat("hh:mm a");
         saveCurrentTime = currentTime.format(calendar.getTime());
 
+
+        Options options = Options.init()
+                .setRequestCode(100)
+                .setCount(30)
+                .setFrontfacing(false)
+                .setImageQuality(ImageQuality.LOW)
+                //.setPreSelectedUrls(selectedImages)
+                .setScreenOrientation(Options.SCREEN_ORIENTATION_PORTRAIT)
+                .setPath("/akshay/new");
+
+        camera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                checker = "image";
+                Pix.start(ChatActivity.this, options);
+            }
+        });
+
+
         MessageInputText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-
             }
         });
+
 
         MessageInputText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -519,6 +786,16 @@ public class ChatActivity extends AppCompatActivity
             }
         });
 
+        EmojIconActions emojIcon = new EmojIconActions(this, rootView, MessageInputText, emojiButton);
+        //emojIcon.ShowEmojIcon();
+        //emojIcon.addEmojiconEditTextList(MessageInputText);
+
+        emojiButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                emojIcon.ShowEmojIcon();
+            }
+        });
 
     }
 
@@ -547,24 +824,17 @@ public class ChatActivity extends AppCompatActivity
             Intent intent = new Intent(ChatActivity.this, OutgoingCallActivity.class);
             intent.putExtra("messageReceiverID",messageReceiverID);
             startActivity(intent);
+        }
 
-          /*  if(call == null){
-                call = SinchManager.sinchClient.getCallClient().callUser(messageReceiverID);
-                call.addCallListener(new SinchCallListener());
-                openCallerDialog(call);
-            }*/
+        if(item.getItemId() == R.id.ic_videocall){
 
+            Intent intent = new Intent(ChatActivity.this, VideoOutgoingCallActivity.class);
+            intent.putExtra("messageReceiverID",messageReceiverID);
+            startActivity(intent);
         }
 
 
         return super.onOptionsItemSelected(item);
-    }
-
-    private void openCallerDialog(final Call call) {
-
-        Intent intent = new Intent(ChatActivity.this, OutgoingCallActivity.class);
-        intent.putExtra("messageReceiverID",messageReceiverID);
-        startActivity(intent);
     }
 
     private void DisplayLastSeen()

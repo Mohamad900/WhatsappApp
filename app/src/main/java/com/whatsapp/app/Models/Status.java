@@ -3,9 +3,11 @@ package com.whatsapp.app.Models;
 import java.util.ArrayList;
 
 public class Status {
+	private String id;
 	private ArrayList<String> images;
 	public String userNname;
 	private String time;
+	private String image;
 
 
 	public Status(ArrayList<String> images, String userNname, String time) {
@@ -19,6 +21,26 @@ public class Status {
 		this.userNname = userNname;
 	}
 
+	public Status(String id,String image) {
+		this.id = id;
+		this.image = image;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getImage() {
+		return image;
+	}
+
+	public void setImage(String image) {
+		this.image = image;
+	}
 
 	public ArrayList<String> getImages() {
 		return images;

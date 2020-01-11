@@ -53,7 +53,6 @@ public class MainActivity extends AppCompatActivity
     private FirebaseAuth mAuth;
     private DatabaseReference RootRef;
     private String currentUserID;
-    private FloatingActionButton fab;
 
 
     @Override
@@ -64,8 +63,6 @@ public class MainActivity extends AppCompatActivity
         myTabLayout = findViewById(R.id.main_tabs);
 
 
-        fab = findViewById(R.id.fab);
-
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
         currentUserID = mAuth.getCurrentUser() == null? null : mAuth.getCurrentUser().getUid();
@@ -73,13 +70,12 @@ public class MainActivity extends AppCompatActivity
 
         SinchManager.startSinchInstance(this,currentUserID);
 
-
-        mToolbar = (Toolbar) findViewById(R.id.main_page_toolbar);
+        mToolbar =  findViewById(R.id.main_page_toolbar);
         setSupportActionBar(mToolbar);
         getSupportActionBar().setTitle("WhatsApp");
 
 
-        myViewPager = (ViewPager) findViewById(R.id.main_tabs_pager);
+        myViewPager =  findViewById(R.id.main_tabs_pager);
         myTabsAccessorAdapter = new TabsAccessorAdapter(getSupportFragmentManager());
         myViewPager.setAdapter(myTabsAccessorAdapter);
 
@@ -89,13 +85,6 @@ public class MainActivity extends AppCompatActivity
 
 
 
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, UserListActivity.class);
-                startActivity(intent);
-            }
-        });
     }
 
     @Override
@@ -106,23 +95,19 @@ public class MainActivity extends AppCompatActivity
         if (currentUser != null)
         {
             updateUserStatus("online");
-            VerifyUserExistance();
         }
     }
-
 
     @Override
     protected void onStop()
     {
         super.onStop();
 
-        if (currentUser != null)
+        /*if (currentUser != null)
         {
             updateUserStatus("offline");
-        }
+        }*/
     }
-
-
 
     @Override
     protected void onDestroy()
@@ -135,32 +120,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
-
-    private void VerifyUserExistance()
-    {
-        String currentUserID = mAuth.getCurrentUser().getUid();
-
-        RootRef.child("Users").child(currentUserID).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot)
-            {
-                if ((dataSnapshot.child("name").exists()))
-                {
-                    Toast.makeText(MainActivity.this, "Welcome", Toast.LENGTH_SHORT).show();
-                }
-                else
-                {
-                    SendUserToSettingsActivity();
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
@@ -181,62 +140,15 @@ public class MainActivity extends AppCompatActivity
         {
             updateUserStatus("offline");
             mAuth.signOut();
-            SendUserToLoginActivity();
-        }
-        if (item.getItemId() == R.id.main_settings_option)
-        {
-            SendUserToSettingsActivity();
+            //SendUserToLoginActivity();
         }
         if (item.getItemId() == R.id.main_create_group_option)
         {
-            RequestNewGroup();
-        }
-        if (item.getItemId() == R.id.main_find_friends_option)
-        {
-            SendUserToFindFriendsActivity();
+            //RequestNewGroup();
         }
 
         return true;
     }
-
-
-    private void RequestNewGroup()
-    {
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this, R.style.AlertDialog);
-        builder.setTitle("Enter Group Name :");
-
-        final EditText groupNameField = new EditText(MainActivity.this);
-        groupNameField.setHint("e.g Coding Cafe");
-        builder.setView(groupNameField);
-
-        builder.setPositiveButton("Create", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i)
-            {
-                String groupName = groupNameField.getText().toString();
-
-                if (TextUtils.isEmpty(groupName))
-                {
-                    Toast.makeText(MainActivity.this, "Please write Group Name...", Toast.LENGTH_SHORT).show();
-                }
-                else
-                {
-                    CreateNewGroup(groupName);
-                }
-            }
-        });
-
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i)
-            {
-                dialogInterface.cancel();
-            }
-        });
-
-        builder.show();
-    }
-
 
 
     private void CreateNewGroup(final String groupName)
@@ -255,27 +167,11 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    private void SendUserToLoginActivity()
-    {
-        Intent loginIntent = new Intent(MainActivity.this, WelcomeActivity.class);
-        loginIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(loginIntent);
-
-    }
-
     private void SendUserToSettingsActivity()
     {
         Intent settingsIntent = new Intent(MainActivity.this, ProfileInfoActivity.class);
         startActivity(settingsIntent);
     }
-
-
-    private void SendUserToFindFriendsActivity()
-    {
-        Intent findFriendsIntent = new Intent(MainActivity.this, FindFriendsActivity.class);
-        startActivity(findFriendsIntent);
-    }
-
 
 
     private void updateUserStatus(String state)

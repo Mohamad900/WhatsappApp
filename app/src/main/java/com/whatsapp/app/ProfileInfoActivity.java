@@ -1,15 +1,21 @@
 package com.whatsapp.app;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.Continuation;
@@ -33,14 +39,20 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import de.hdodenhof.circleimageview.CircleImageView;
+import hani.momanii.supernova_emoji_library.Actions.EmojIconActions;
+import hani.momanii.supernova_emoji_library.Helper.EmojiconEditText;
 
 public class ProfileInfoActivity extends AppCompatActivity
 {
     private Button UpdateAccountSettings;
-    private EditText userName, userStatus;
+    private EditText userStatus;
+    EmojiconEditText userName;
     private CircleImageView userProfileImage;
 
     private String currentUserID;
@@ -53,6 +65,8 @@ public class ProfileInfoActivity extends AppCompatActivity
 
     private Toolbar SettingsToolBar;
     String phoneNumber,countryCode;
+    ImageView emojiButton;
+    RelativeLayout rootView;
 
 
     @Override
@@ -81,14 +95,99 @@ public class ProfileInfoActivity extends AppCompatActivity
             @Override
             public void onClick(View view)
             {
+                CheckPermissions();
+
+            }
+        });
+
+        EmojIconActions emojIcon = new EmojIconActions(this, rootView, userName, emojiButton);
+
+        emojiButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                emojIcon.ShowEmojIcon();
+            }
+        });
+
+    }
+
+    private void CheckPermissions(){
+
+        // Permission is not granted
+        if (ContextCompat.checkSelfPermission( this, Manifest.permission.READ_EXTERNAL_STORAGE ) != PackageManager.PERMISSION_GRANTED ) {
+
+            ActivityCompat.requestPermissions( this, new String[] {  android.Manifest.permission.READ_EXTERNAL_STORAGE ,android.Manifest.permission.WRITE_EXTERNAL_STORAGE  }, 1);
+        }else{
+            Intent galleryIntent = new Intent();
+            galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
+            galleryIntent.setType("image/*");
+            startActivityForResult(galleryIntent, GalleryPick);
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 1) {
+
+            // Permission is granted
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Intent galleryIntent = new Intent();
                 galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
                 galleryIntent.setType("image/*");
                 startActivityForResult(galleryIntent, GalleryPick);
             }
-        });
-    }
+            else {
+                // Permission is denied
+                if(shouldShowRequestPermissionRationale(permissions[0])){
+                    Toast.makeText(this, "Please grant the requested permissions to access photos", Toast.LENGTH_LONG).show();
+                }else{
+                    Toast.makeText(this, "You need to grant the requested permissions at phone settings", Toast.LENGTH_LONG).show();
+                }
 
+
+            }
+        }
+
+        if (requestCode == 2) {
+
+            // Permission is granted
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                    && grantResults[1] == PackageManager.PERMISSION_GRANTED
+                    && grantResults[2] == PackageManager.PERMISSION_GRANTED
+                    && grantResults[3] == PackageManager.PERMISSION_GRANTED
+                    && grantResults[4] == PackageManager.PERMISSION_GRANTED
+                    && grantResults[5] == PackageManager.PERMISSION_GRANTED
+                    && grantResults[6] == PackageManager.PERMISSION_GRANTED) {
+
+                Intent mainIntent = new Intent(ProfileInfoActivity.this, MainActivity.class);
+                mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(mainIntent);
+                finish();
+            }
+            else {
+                // Permission is denied
+                if(!shouldShowRequestPermissionRationale(permissions[0]) ||
+                        !shouldShowRequestPermissionRationale(permissions[1]) ||
+                        !shouldShowRequestPermissionRationale(permissions[2]) ||
+                        !shouldShowRequestPermissionRationale(permissions[3]) ||
+                        !shouldShowRequestPermissionRationale(permissions[4]) ||
+                        !shouldShowRequestPermissionRationale(permissions[5]) ||
+                        !shouldShowRequestPermissionRationale(permissions[6])){
+
+                    Toast.makeText(this, "You need to grant the requested permissions at phone settings", Toast.LENGTH_LONG).show();
+
+                }else{
+                    Toast.makeText(this, "Please grant the requested permissions to access app functionalities", Toast.LENGTH_LONG).show();
+                }
+
+
+            }
+        }
+    }
 
 
     private void InitializeFields()
@@ -96,6 +195,8 @@ public class ProfileInfoActivity extends AppCompatActivity
         UpdateAccountSettings = findViewById(R.id.update_settings_button);
         userName = findViewById(R.id.set_user_name);
         userProfileImage = findViewById(R.id.set_profile_image);
+        emojiButton = findViewById(R.id.emojiButton);
+        rootView = findViewById(R.id.rootView);
         loadingBar = new ProgressDialog(this);
     }
 
@@ -192,7 +293,7 @@ public class ProfileInfoActivity extends AppCompatActivity
 
         if (TextUtils.isEmpty(setUserName))
         {
-            Toast.makeText(this, "Please write your name ....", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please type your name", Toast.LENGTH_SHORT).show();
         }else
         {
             HashMap<String, Object> profileMap = new HashMap<>();
@@ -205,6 +306,10 @@ public class ProfileInfoActivity extends AppCompatActivity
                         {
                             if (task.isSuccessful())
                             {
+                                SharedPreferences.Editor editor = getSharedPreferences("UserProfile", MODE_PRIVATE).edit();
+                                editor.putString("name", setUserName);
+                                editor.apply();
+
                                 Toast.makeText(ProfileInfoActivity.this, "Profile Created Successfully...", Toast.LENGTH_SHORT).show();
                                 SendUserToMainActivity();
                             }
@@ -219,53 +324,35 @@ public class ProfileInfoActivity extends AppCompatActivity
     }
 
 
-
-  /*  private void RetrieveUserInfo()
-    {
-        RootRef.child("Users").child(currentUserID)
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot)
-                    {
-                        if ((dataSnapshot.exists()) && (dataSnapshot.hasChild("name") && (dataSnapshot.hasChild("image"))))
-                        {
-                            String retrieveUserName = dataSnapshot.child("name").getValue().toString();
-                            String retrievesStatus = dataSnapshot.child("status").getValue().toString();
-                            String retrieveProfileImage = dataSnapshot.child("image").getValue().toString();
-
-                            userName.setText(retrieveUserName);
-                            userStatus.setText(retrievesStatus);
-                            Picasso.get().load(retrieveProfileImage).into(userProfileImage);
-                        }
-                        else if ((dataSnapshot.exists()) && (dataSnapshot.hasChild("name")))
-                        {
-                            String retrieveUserName = dataSnapshot.child("name").getValue().toString();
-                            String retrievesStatus = dataSnapshot.child("status").getValue().toString();
-
-                            userName.setText(retrieveUserName);
-                            userStatus.setText(retrievesStatus);
-                        }
-                        else
-                        {
-                            userName.setVisibility(View.VISIBLE);
-                            Toast.makeText(ProfileInfoActivity.this, "Please set & update your profile information...", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
-    }*/
-
-
-
     private void SendUserToMainActivity()
     {
-        Intent mainIntent = new Intent(ProfileInfoActivity.this, MainActivity.class);
-        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(mainIntent);
-        finish();
+
+        if (ContextCompat.checkSelfPermission( this, Manifest.permission.READ_CONTACTS ) != PackageManager.PERMISSION_GRANTED  ||
+                ContextCompat.checkSelfPermission( this, Manifest.permission.WRITE_CONTACTS ) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission( this, Manifest.permission.RECORD_AUDIO ) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission( this, Manifest.permission.ACCESS_NETWORK_STATE ) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission( this, Manifest.permission.READ_PHONE_STATE ) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission( this, Manifest.permission.MODIFY_AUDIO_SETTINGS ) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission( this, Manifest.permission.CAMERA ) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions( this, new String[] {
+
+                    android.Manifest.permission.READ_CONTACTS
+                    ,android.Manifest.permission.WRITE_CONTACTS
+                    ,android.Manifest.permission.RECORD_AUDIO
+                    ,android.Manifest.permission.ACCESS_NETWORK_STATE
+                    ,android.Manifest.permission.READ_PHONE_STATE
+                    ,android.Manifest.permission.MODIFY_AUDIO_SETTINGS
+                    , Manifest.permission.CAMERA
+
+                    }, 2);
+        }else{
+            Intent mainIntent = new Intent(ProfileInfoActivity.this, MainActivity.class);
+            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(mainIntent);
+            finish();
+        }
+
+
     }
 }

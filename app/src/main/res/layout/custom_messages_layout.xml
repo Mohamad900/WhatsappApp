@@ -30,15 +30,33 @@
 
     <ImageView
         android:id="@+id/message_sender_image_view"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_margin="4dp"
+        android:layout_alignParentEnd="true"
+        />
+
+    <ImageView
+        android:id="@+id/message_sender_document_view"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_margin="4dp"
         android:layout_alignParentEnd="true"
         />
 
     <ImageView
         android:id="@+id/message_receiver_image_view"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_margin="4dp"
+        android:layout_alignParentStart="true"
+        />
+
+    <ImageView
+        android:id="@+id/message_receiver_document_view"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_margin="4dp"
         android:layout_alignParentStart="true"
         />
 

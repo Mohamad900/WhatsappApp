@@ -8,11 +8,17 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 import com.whatsapp.app.Models.Call;
 import com.whatsapp.app.R;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -37,20 +43,94 @@ public class CallsAdapter extends RecyclerView.Adapter<CallsAdapter.CallsViewHol
 	@Override
 	public void onBindViewHolder(@NonNull CallsViewHolder callsViewHolder, int i) {
 		
-		Call call = calls.get(i);
-		
-		Picasso.get()
-			.load(call.getProfilePic())
-			.placeholder(R.drawable.profile)
-			.into(callsViewHolder.image);
-		
-		callsViewHolder.tvName.setText(call.getName());
+		Call call = calls.get(calls.size() - i-1);
+		String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+		if(currentUserId.equals(call.getFrom())){
+
+			if(call.getStatus().equals("Ended")){
+				callsViewHolder.imgArrow.setImageResource(R.drawable.ic_call_made_black_24dp);
+			}
+
+			FirebaseDatabase.getInstance().getReference().child("Users").child(call.getTo()).child("name").addValueEventListener(new ValueEventListener() {
+				@Override
+				public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+					if(dataSnapshot.exists())
+						callsViewHolder.tvName.setText(dataSnapshot.getValue().toString());
+				}
+
+				@Override
+				public void onCancelled(@NonNull DatabaseError databaseError) {
+
+				}
+			});
+
+			FirebaseDatabase.getInstance().getReference().child("Users").child(call.getTo()).child("image").addValueEventListener(new ValueEventListener() {
+				@Override
+				public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+					if(dataSnapshot.exists())
+						Picasso.get()
+								.load(dataSnapshot.getValue().toString())
+								.placeholder(R.drawable.profile)
+								.into(callsViewHolder.image);
+				}
+
+				@Override
+				public void onCancelled(@NonNull DatabaseError databaseError) {
+
+				}
+			});
+
+		}else if(currentUserId.equals(call.getTo())){
+
+			if(call.getStatus().equals("Ended")){
+				callsViewHolder.imgArrow.setImageResource(R.drawable.ic_call_received_black_24dp);
+			}
+
+			if(call.getStatus().equals("Not Answered")){
+				callsViewHolder.imgArrow.setImageResource(R.drawable.ic_call_received_red);
+			}
+
+			FirebaseDatabase.getInstance().getReference().child("Users").child(call.getFrom()).child("name").addValueEventListener(new ValueEventListener() {
+				@Override
+				public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+					if(dataSnapshot.exists())
+						callsViewHolder.tvName.setText(dataSnapshot.getValue().toString());
+				}
+
+				@Override
+				public void onCancelled(@NonNull DatabaseError databaseError) {
+
+				}
+			});
+
+			FirebaseDatabase.getInstance().getReference().child("Users").child(call.getFrom()).child("image").addValueEventListener(new ValueEventListener() {
+				@Override
+				public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+					if(dataSnapshot.exists())
+						Picasso.get()
+								.load(dataSnapshot.getValue().toString())
+								.placeholder(R.drawable.profile)
+								.into(callsViewHolder.image);
+				}
+
+				@Override
+				public void onCancelled(@NonNull DatabaseError databaseError) {
+
+				}
+			});
+
+		}
+
+
 		callsViewHolder.tvTime.setText(call.getTime());
 		
-		if (call.getType() == Call.AUDIO) {
+		if (call.getType().equals("voice call")) {
 			callsViewHolder.missedCallType.setBackgroundResource(R.drawable.ic_action_calls_green);
 
-		}else if (call.getType() == Call.VIDEO) {
+		}else if (call.getType().equals("video call")) {
 			
 			callsViewHolder.missedCallType.setBackgroundResource(R.drawable.ic_action_video);
 			
@@ -70,7 +150,7 @@ public class CallsAdapter extends RecyclerView.Adapter<CallsAdapter.CallsViewHol
 		CircleImageView image;
 		TextView tvName;
 		TextView tvTime;
-		ImageView missedCallType;
+		ImageView missedCallType,imgArrow;
 		
 		CallsViewHolder(@NonNull View itemView) {
 			super(itemView);
@@ -79,6 +159,7 @@ public class CallsAdapter extends RecyclerView.Adapter<CallsAdapter.CallsViewHol
 			tvName = itemView.findViewById(R.id.tvName);
 			tvTime = itemView.findViewById(R.id.tvTime);
 			missedCallType = itemView.findViewById(R.id.imgType);
+			imgArrow = itemView.findViewById(R.id.imgArrow);;
 			
 		}
 	}

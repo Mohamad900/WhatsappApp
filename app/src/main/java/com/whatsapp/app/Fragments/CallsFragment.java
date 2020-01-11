@@ -12,13 +12,21 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.annotations.Nullable;
 import com.whatsapp.app.Adapters.CallsAdapter;
 import com.whatsapp.app.MainActivity;
+import com.whatsapp.app.Messages;
 import com.whatsapp.app.Models.Call;
 import com.whatsapp.app.R;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -26,9 +34,12 @@ import java.util.ArrayList;
  */
 public class CallsFragment extends Fragment {
 
-    private ArrayList<Call> calls;
     private RecyclerView rvCalls;
     private CallsAdapter callsAdapter;
+    String currentUserID;
+    private DatabaseReference RootRef;
+    private final ArrayList<Call> callsList = new ArrayList<>();
+
 
     public static final String[] profileUrls = {"https://blog.rackspace.com/wp-content/uploads/2018/09/pumping-iron-arnold-schwarzenegger-1-1108x0-c-default-696x522.jpg",
             "https://www.rollingstone.com/wp-content/uploads/2018/06/rs-213329-R1247_FEA_Rogen_A.jpg?crop=900:600&width=440",
@@ -47,29 +58,61 @@ public class CallsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_calls, container, false);
 
         initialize(view);
-        populateCalls();
         setCallsAdapter();
+        populateCalls();
 
         return view;
     }
 
     private void initialize(View view) {
         rvCalls = view.findViewById(R.id.rvCalls);
-        calls = new ArrayList<>();
+        currentUserID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        RootRef = FirebaseDatabase.getInstance().getReference();
     }
 
 
     private void populateCalls() {
-        //Population logic goes here
-        calls.add(new Call(profileUrls[0], "Arnold", "2:00 PM", Call.AUDIO));
-        calls.add(new Call(profileUrls[2], "Elon", "Yesterday, 8:00 PM", Call.VIDEO));
-        calls.add(new Call("Rohan", "Yesterday, 10:15 AM", Call.AUDIO));
+
+        RootRef.child("Calls").child(currentUserID).addChildEventListener(new ChildEventListener() {
+                    @Override
+                    public void onChildAdded(DataSnapshot dataSnapshot, String s)
+                    {
+                        for (DataSnapshot child:dataSnapshot.getChildren()) {
+
+                            Call call = child.getValue(Call.class);
+                            callsList.add(call);
+                        }
+                        callsAdapter.notifyDataSetChanged();
+
+                    }
+
+                    @Override
+                    public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+                    }
+
+                    @Override
+                    public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+                    }
+
+                    @Override
+                    public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
     }
 
     private void setCallsAdapter() {
 
         rvCalls.setLayoutManager(new LinearLayoutManager(getContext()));
-        callsAdapter = new CallsAdapter(getContext(), calls);
+        callsAdapter = new CallsAdapter(getContext(), callsList);
         rvCalls.setAdapter(callsAdapter);
 
     }

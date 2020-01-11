@@ -1,14 +1,20 @@
 package com.whatsapp.app.Fragments;
 
 
+import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -22,6 +28,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -43,6 +50,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
+import com.whatsapp.app.Activities.ManageStatusActivity;
 import com.whatsapp.app.Activities.StoryActivity;
 import com.whatsapp.app.Adapters.StatusAdapter;
 import com.whatsapp.app.ChatActivity;
@@ -77,6 +85,15 @@ public class StatusFragment extends Fragment {
     ArrayList<String> usersIdsList;
     ArrayList<String> contactStatusImages;
     HashSet<String> contactsPhoneNumbers;
+    ImageView status_more;
+    Context context;
+    ProgressDialog dialog;
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        this.context = context;
+    }
 
     public StatusFragment() {
         // Required empty public constructor
@@ -108,8 +125,12 @@ public class StatusFragment extends Fragment {
         rvStatus = view.findViewById(R.id.rvStatus);
         profile_image = view.findViewById(R.id.profile_image);
         chat_row_container = view.findViewById(R.id.chat_row_container);
+        status_more = view.findViewById(R.id.status_more);
         auth = FirebaseAuth.getInstance();
         currentUserStatus = new ArrayList<>();
+
+        dialog = new ProgressDialog(context);
+        dialog.setCancelable(false);
 
         options = Options.init()
                 .setRequestCode(100)
@@ -136,6 +157,16 @@ public class StatusFragment extends Fragment {
                 //options.setPreSelectedUrls(selectedImages);
             }
         });
+
+        status_more.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getContext(), ManageStatusActivity.class);
+                startActivity(intent);
+            }
+        });
+
+
     }
 
     @Override
@@ -165,6 +196,21 @@ public class StatusFragment extends Fragment {
                 }
                 return;
             }
+/*            case 1 :
+
+                // Permission is granted
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                    getContactList();
+                }
+                else {
+                    if(!shouldShowRequestPermissionRationale(permissions[0]) || !shouldShowRequestPermissionRationale(permissions[1]) ){
+                        Toast.makeText(context, "You need to grant the requested permissions at phone settings", Toast.LENGTH_LONG).show();
+
+                    }else{
+                        Toast.makeText(context, "Please grant the requested permissions", Toast.LENGTH_LONG).show();
+
+                    }
+                }*/
         }
     }
 
@@ -188,6 +234,9 @@ public class StatusFragment extends Fragment {
                         currentUserStatus.add(child.getValue().toString());
                     }
 
+                    if(currentUserStatus.size()>0)
+                        status_more.setVisibility(View.VISIBLE);
+
                 }
 
             }
@@ -205,6 +254,9 @@ public class StatusFragment extends Fragment {
         final DatabaseReference userStoryRef = FirebaseDatabase.getInstance().getReference().child("Stories").child(auth.getCurrentUser().getUid());
         StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("Stories");
 
+        dialog.setMessage("Uploading image ..");
+        dialog.show();
+
         for(int i=0;i<selectedImages.size();i++){
 
             final String key = userStoryRef.push().getKey();
@@ -216,6 +268,7 @@ public class StatusFragment extends Fragment {
                 @Override
                 public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
                     if (!task.isSuccessful()){
+                        dialog.dismiss();
                         throw task.getException();
                     }
                     return filePath.getDownloadUrl();
@@ -229,8 +282,8 @@ public class StatusFragment extends Fragment {
                         String myUrl = downloadUrl.toString();
 
                         userStoryRef.child(key).setValue(myUrl);
-
                     }
+                    dialog.dismiss();
 
                 }
             });
@@ -240,13 +293,25 @@ public class StatusFragment extends Fragment {
     }
 
     private void getContactsStatus() {
+
+        //CheckPermissions();
         getContactList();
-
-
-
     }
 
+    /*private void CheckPermissions(){
+
+        // Permission is not granted
+        if (ContextCompat.checkSelfPermission( getContext(), Manifest.permission.READ_CONTACTS ) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission( getContext(), Manifest.permission.WRITE_CONTACTS ) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions( getActivity(), new String[] {  Manifest.permission.READ_CONTACTS,Manifest.permission.WRITE_CONTACTS  }, 1);
+        }else{
+            getContactList();
+        }
+    }*/
+
     private void getContactList(){
+
 
         Cursor phones = getContext().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
         while(phones.moveToNext()){
@@ -261,7 +326,7 @@ public class StatusFragment extends Fragment {
             if(String.valueOf(phone.charAt(0)).equals("+"))
                 phone = extractCountryCodeFromPhoneNumber(phone);
 
-            contactsPhoneNumbers.add(phone);
+              contactsPhoneNumbers.add(phone);
         }
 
         for (String contactsPhoneNumber : contactsPhoneNumbers) {
@@ -292,7 +357,7 @@ public class StatusFragment extends Fragment {
         contactStatusImages.clear();
         DatabaseReference mUserDB = FirebaseDatabase.getInstance().getReference().child("Users");
         Query query = mUserDB.orderByChild("phone").equalTo(phoneNumber);
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
+        query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 

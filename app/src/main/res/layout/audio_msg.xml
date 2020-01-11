@@ -24,7 +24,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_play_circle_filled_black_24dp" />
 
-        <SeekBar
+        <com.whatsapp.app.SmoothSeekBar
             android:id="@+id/seekBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
