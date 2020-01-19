@@ -9,8 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
-import com.whatsapp.app.ChatActivity;
-import com.whatsapp.app.Models.Call;
+import com.whatsapp.app.Activities.ChatActivity;
 import com.whatsapp.app.Models.User;
 import com.whatsapp.app.R;
 

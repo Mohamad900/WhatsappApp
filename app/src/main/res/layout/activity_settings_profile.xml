@@ -5,38 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:emojicon="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/rootView"
-    tools:context=".Activities.ProfileInfoActivity">
-
-    <TextView
-        android:id="@+id/profileInfoTV"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"
-        android:text="Profile Info"
-        android:textColor="#118C7E"
-        android:textSize="18dp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/profileInfoMsgTV"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/profileInfoTV"
-        android:layout_centerHorizontal="true"
-        android:layout_marginLeft="30dp"
-        android:layout_marginRight="30dp"
-        android:layout_marginTop="20dp"
-        android:gravity="center"
-        android:text="@string/profile_info_msg" />
+    android:id="@+id/rootView">
 
 
     <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/set_profile_image"
+        android:id="@+id/profile_image"
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:layout_below="@+id/profileInfoMsgTV"
+        android:transitionName="profile"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="30dp"
         android:src="@drawable/profile_image"
@@ -45,15 +21,15 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/set_profile_image"
+        android:layout_below="@+id/profile_image"
         android:layout_marginStart="25dp"
         android:layout_marginEnd="25dp"
         android:weightSum="10"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="28dp"
         android:orientation="horizontal">
 
         <hani.momanii.supernova_emoji_library.Helper.EmojiconEditText
-            android:id="@+id/set_user_name"
+            android:id="@+id/username"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="9"
@@ -65,25 +41,25 @@
             android:paddingEnd="6dp"
             emojicon:emojiconSize="28sp" />
 
-    <ImageView
-        android:id="@+id/emojiButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:background="@android:color/transparent"
-        android:src="@drawable/smiley"
-        android:layout_marginTop="4dp"
-        android:layout_marginStart="5dp"/>
+        <ImageView
+            android:id="@+id/emojiButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:src="@drawable/smiley"
+            android:layout_marginTop="4dp"
+            android:layout_marginStart="5dp"/>
 
     </LinearLayout>
 
     <Button
-        android:id="@+id/update_settings_button"
+        android:id="@+id/save"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:text="NEXT"
+        android:text="Save"
         android:layout_marginBottom="22dp"
         android:background="@drawable/btn_green_round_corners"
         android:textColor="@color/white"

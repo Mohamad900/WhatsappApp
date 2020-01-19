@@ -1,4 +1,4 @@
-package com.whatsapp.app;
+package com.whatsapp.app.Models;
 
 
 public class Contacts {

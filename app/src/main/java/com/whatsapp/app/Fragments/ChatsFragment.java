@@ -1,4 +1,4 @@
-package com.whatsapp.app;
+package com.whatsapp.app.Fragments;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -22,12 +22,15 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 import com.whatsapp.app.Activities.UserListActivity;
+import com.whatsapp.app.Activities.ChatActivity;
+import com.whatsapp.app.Models.Contacts;
+import com.whatsapp.app.Models.Messages;
+import com.whatsapp.app.R;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -107,7 +110,7 @@ public class ChatsFragment extends Fragment
 
                                 if (dataSnapshot.exists()) {
 
-                                    Map<String,Messages>  map = (Map<String,Messages>)dataSnapshot.getValue();
+                                    Map<String, Messages>  map = (Map<String,Messages>)dataSnapshot.getValue();
 
                                     Map.Entry<String,Messages> entry = map.entrySet().iterator().next();
                                     Map<String,String> lastMsgObject = (Map<String,String>)entry.getValue();

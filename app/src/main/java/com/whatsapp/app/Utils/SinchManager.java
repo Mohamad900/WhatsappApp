@@ -9,8 +9,6 @@ import com.sinch.android.rtc.calling.CallClient;
 import com.sinch.android.rtc.calling.CallClientListener;
 import com.whatsapp.app.Activities.IncomingCallActivity;
 import com.whatsapp.app.Activities.VideoIncomingCallActivity;
-import com.whatsapp.app.ChatActivity;
-import com.whatsapp.app.MainActivity;
 
 public class SinchManager {
 

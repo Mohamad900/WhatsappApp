@@ -22,7 +22,7 @@
             android:textColor="@color/white"
             />
 
-        <de.hdodenhof.circleimageview.CircleImageView
+       <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/caller_image"
             android:layout_width="80dp"
             android:layout_height="80dp"
@@ -34,27 +34,37 @@
             android:id="@+id/caller_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Mhd abdallah"
+            android:text="Unknown"
             android:textSize="32dp"
             android:textColor="@color/white"
             />
 
         <TextView
-            android:id="@+id/call_time"
+            android:id="@+id/call_state"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="04:44"
-            android:textSize="18dp"
+            android:text="RINGING"
+            android:textSize="14dp"
             android:textColor="@color/white"
             />
+
+
+        <Chronometer
+            android:id="@+id/chronometer"
+            android:textColor="@color/white"
+            android:visibility="invisible"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
     </LinearLayout>
 
     <ImageView
         android:id="@+id/user_caller_image"
         android:layout_below="@+id/header_call"
         android:layout_width="match_parent"
+        android:scaleType="fitXY"
         android:layout_height="match_parent"
-        android:background="@drawable/signup_photo"
+        android:background="@drawable/pic"
         />
 
    <ImageView

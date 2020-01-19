@@ -1,4 +1,4 @@
-package com.whatsapp.app;
+package com.whatsapp.app.Activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
+import com.whatsapp.app.R;
 
 public class ImageViewerActivity extends AppCompatActivity {
 

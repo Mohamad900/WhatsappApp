@@ -1,6 +1,5 @@
-package com.whatsapp.app;
+package com.whatsapp.app.Adapters;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -8,12 +7,12 @@ import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Handler;
-import android.view.Gravity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -29,7 +28,14 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.keenfin.audioview.AudioService;
+import com.keenfin.audioview.AudioView;
 import com.squareup.picasso.Picasso;
+import com.whatsapp.app.Activities.ImageViewerActivity;
+import com.whatsapp.app.Activities.MainActivity;
+import com.whatsapp.app.Models.Messages;
+import com.whatsapp.app.R;
+import com.whatsapp.app.SmoothSeekBar;
 
 import java.io.IOException;
 import java.util.List;
@@ -38,7 +44,6 @@ import java.util.concurrent.TimeUnit;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
-import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder>
 {
@@ -66,7 +71,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         public ImageView messageSenderPicture, messageReceiverPicture,messageSenderDocument,messageReceiverDocument;
         RelativeLayout msg_audio;
         SmoothSeekBar seekBar;
-        ImageView imgPlay;
+        ImageButton imgPlay;
+        com.keenfin.audioview.AudioView2 audio_view;
 
 
         public MessageViewHolder(@NonNull View itemView)
@@ -82,7 +88,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             timeSenderTV = (TextView) itemView.findViewById(R.id.timeSenderTV);
             msg_audio = itemView.findViewById(R.id.msg_audio);
             seekBar = itemView.findViewById(R.id.seekBar);
-            imgPlay = itemView.findViewById(R.id.imgPlay);
+            imgPlay = itemView.findViewById(R.id.play);
+            audio_view = itemView.findViewById(R.id.audio_view);
             //receiverProfileImage = (CircleImageView) itemView.findViewById(R.id.message_profile_image);
             messageReceiverPicture = itemView.findViewById(R.id.message_receiver_image_view);
             messageSenderPicture = itemView.findViewById(R.id.message_sender_image_view);
@@ -193,21 +200,38 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
             if (fromUserID.equals(messageSenderId)){
                 messageViewHolder.msg_audio.setVisibility((View.VISIBLE));
-                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+               /* RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
                 params.addRule(RelativeLayout.ALIGN_PARENT_END);
                 params.setMargins(100, 10, 20, 10);
-                messageViewHolder.msg_audio.setLayoutParams(params);
+                messageViewHolder.msg_audio.setLayoutParams(params);*/
                 messageViewHolder.msg_audio.setBackgroundColor(context.getResources().getColor(R.color.sender_bubble));
 
             }else{
                 messageViewHolder.msg_audio.setVisibility((View.VISIBLE));
-                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+              /*  RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
                 params.addRule(RelativeLayout.ALIGN_PARENT_START);
                 params.setMargins(20, 10, 100, 10);
-                messageViewHolder.msg_audio.setLayoutParams(params);
+                messageViewHolder.msg_audio.setLayoutParams(params);*/
                 messageViewHolder.msg_audio.setBackgroundColor(context.getResources().getColor(R.color.white));
             }
 
+            messageViewHolder.audio_view.setTag(i);
+            if (!messageViewHolder.audio_view.attached())
+                messageViewHolder.audio_view.setUpControls();
+            try {
+                messageViewHolder.audio_view.setDataSource(userMessagesList.get(i).getMessage());
+            } catch (IOException ignored) {
+            }
+            /*
+            try {
+
+                    messageViewHolder.audio_view.setDataSource(userMessagesList.get(i).getMessage());
+            } catch (IOException e) {
+                Log.d("error",e.getMessage());
+                e.printStackTrace();
+            }*/
+
+/*
 
             final MediaPlayer mPlayer = new MediaPlayer();
             try {
@@ -278,6 +302,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                 if (mPlayer.isPlaying() && fromUser) {
                                         mPlayer.seekTo(progress);
                                 }
+
+                                *//*if (!mPlayer.isPlaying() && isPaused==false) {
+                                    messageViewHolder.seekBar.setProgress(0);
+                                }*//*
                             } catch (Exception e) {
                                 //seekBar.setEnabled(false);
                             }
@@ -309,7 +337,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     });
 
                 }
-            });
+            });*/
 
         }
 
@@ -338,7 +366,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                 if(pos == 0){
 
                                     deleteSentMessage(i,messageViewHolder);
-                                    Intent intent = new Intent(messageViewHolder.itemView.getContext(),MainActivity.class);
+                                    Intent intent = new Intent(messageViewHolder.itemView.getContext(), MainActivity.class);
                                     messageViewHolder.itemView.getContext().startActivity(intent);
                                 }else if(pos == 1){
 
@@ -406,7 +434,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                     messageViewHolder.itemView.getContext().startActivity(intent);
                                 }else if(pos == 1){
 
-                                    Intent intent = new Intent(messageViewHolder.itemView.getContext(),ImageViewerActivity.class);
+                                    Intent intent = new Intent(messageViewHolder.itemView.getContext(), ImageViewerActivity.class);
                                     intent.putExtra("url",userMessagesList.get(i).getMessage());
                                     messageViewHolder.itemView.getContext().startActivity(intent);
 

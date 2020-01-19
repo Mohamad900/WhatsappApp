@@ -1,34 +1,27 @@
-package com.whatsapp.app;
+package com.whatsapp.app.Activities;
 
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
-import android.media.AudioManager;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -46,7 +39,6 @@ import com.fxn.utility.ImageQuality;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
@@ -61,20 +53,11 @@ import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
-import com.sinch.android.rtc.PushPair;
-import com.sinch.android.rtc.Sinch;
-import com.sinch.android.rtc.SinchClient;
-import com.sinch.android.rtc.SinchClientListener;
-import com.sinch.android.rtc.calling.Call;
-import com.sinch.android.rtc.calling.CallClient;
-import com.sinch.android.rtc.calling.CallClientListener;
-import com.sinch.android.rtc.calling.CallListener;
+import com.keenfin.audioview.AudioService;
 import com.squareup.picasso.Picasso;
-import com.whatsapp.app.Activities.IncomingCallActivity;
-import com.whatsapp.app.Activities.OutgoingCallActivity;
-import com.whatsapp.app.Activities.VideoOutgoingCallActivity;
-import com.whatsapp.app.Fragments.StatusFragment;
-import com.whatsapp.app.Utils.SinchManager;
+import com.whatsapp.app.Adapters.MessageAdapter;
+import com.whatsapp.app.Models.Messages;
+import com.whatsapp.app.R;
 
 import java.io.File;
 import java.io.IOException;
@@ -89,8 +72,6 @@ import java.util.concurrent.TimeUnit;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
@@ -302,6 +283,7 @@ public class ChatActivity extends AppCompatActivity
                     @Override
                     public void onChildAdded(DataSnapshot dataSnapshot, String s)
                     {
+
                         Messages messages = dataSnapshot.getValue(Messages.class);
 
                         messagesList.add(messages);
@@ -346,6 +328,14 @@ public class ChatActivity extends AppCompatActivity
             finishAfterTransition();
         }
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Intent audioService = new Intent(this, AudioService.class);
+        stopService(audioService);
+    }
+
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void revealMenu() {
@@ -821,16 +811,52 @@ public class ChatActivity extends AppCompatActivity
 
         if(item.getItemId() == R.id.ic_call){
 
-            Intent intent = new Intent(ChatActivity.this, OutgoingCallActivity.class);
-            intent.putExtra("messageReceiverID",messageReceiverID);
-            startActivity(intent);
+            FirebaseDatabase.getInstance().getReference().child("PendingCalls").child("1").child(messageReceiverID)
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                            if(dataSnapshot.exists()){
+                                Toast.makeText(ChatActivity.this,"The destination user is on another video/voice call",Toast.LENGTH_LONG).show();
+                                finish();
+                            }else{
+                                Intent intent = new Intent(ChatActivity.this, OutgoingCallActivity.class);
+                                intent.putExtra("messageReceiverID",messageReceiverID);
+                                startActivity(intent);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
         }
 
         if(item.getItemId() == R.id.ic_videocall){
 
-            Intent intent = new Intent(ChatActivity.this, VideoOutgoingCallActivity.class);
-            intent.putExtra("messageReceiverID",messageReceiverID);
-            startActivity(intent);
+            FirebaseDatabase.getInstance().getReference().child("PendingCalls").child("1").child(messageReceiverID)
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                            if(dataSnapshot.exists()){
+                                Toast.makeText(ChatActivity.this,"The destination user is on another video/voice call",Toast.LENGTH_LONG).show();
+                                finish();
+                            }else{
+                                Intent intent = new Intent(ChatActivity.this, VideoOutgoingCallActivity.class);
+                                intent.putExtra("messageReceiverID",messageReceiverID);
+                                startActivity(intent);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+
+
         }
 
 
@@ -909,6 +935,7 @@ public class ChatActivity extends AppCompatActivity
                 {
                     if (task.isSuccessful())
                     {
+
                         Toast.makeText(ChatActivity.this, "Message Sent Successfully...", Toast.LENGTH_SHORT).show();
                     }
                     else

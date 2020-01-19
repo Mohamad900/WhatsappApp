@@ -1,4 +1,4 @@
-package com.whatsapp.app;
+package com.whatsapp.app.Activities;
 
 import android.Manifest;
 import android.app.ProgressDialog;
@@ -22,18 +22,15 @@ import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.database.annotations.Nullable;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
+import com.whatsapp.app.R;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -263,7 +260,6 @@ public class ProfileInfoActivity extends AppCompatActivity
                                         {
                                             if (task.isSuccessful())
                                             {
-                                                //Toast.makeText(ProfileInfoActivity.this, "Image save in Database, Successfully...", Toast.LENGTH_SHORT).show();
                                                 loadingBar.dismiss();
                                             }
                                             else

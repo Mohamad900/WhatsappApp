@@ -1,6 +1,7 @@
-package com.whatsapp.app;
+package com.whatsapp.app.Adapters;
 
 import com.whatsapp.app.Fragments.CallsFragment;
+import com.whatsapp.app.Fragments.ChatsFragment;
 import com.whatsapp.app.Fragments.StatusFragment;
 
 import androidx.annotation.Nullable;
@@ -25,14 +26,10 @@ public class TabsAccessorAdapter extends FragmentPagerAdapter
                 return new ChatsFragment();
 
             case 1 :
-                //return new GroupsFragment();
                 return  new StatusFragment();
 
             case 2 :
-                //return new ContactsFragment();
                 return  new CallsFragment();
-           /* case 3 :
-                return new RequestsFragment();*/
 
                 default:
                     return  null;
@@ -54,8 +51,6 @@ public class TabsAccessorAdapter extends FragmentPagerAdapter
 
             case 2 :
                 return "Calls";
-            /*case 3 :
-                return "Requests";*/
 
             default:
                 return  null;

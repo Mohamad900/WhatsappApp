@@ -1,23 +1,13 @@
 package com.whatsapp.app.Activities;
 
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.ContextCompat;
 import androidx.core.view.MenuItemCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import io.michaelrocks.libphonenumber.android.PhoneNumberUtil;
 
 import android.app.ProgressDialog;
-import android.app.SearchManager;
-import android.content.Context;
-import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -34,15 +24,12 @@ import com.sinch.gson.Gson;
 import com.whatsapp.app.Adapters.CountryAdapter;
 import com.whatsapp.app.Models.Country;
 import com.whatsapp.app.R;
-import com.whatsapp.app.VerifyPhoneActivity;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 public class CountryActivity extends AppCompatActivity {
 
@@ -85,10 +72,6 @@ public class CountryActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
 
-        /*final Drawable upArrow =  ContextCompat.getDrawable(this, R.drawable.abc_ic_ab_back_material);
-        upArrow.setColorFilter(ContextCompat.getColor(this, R.color.colorPrimary), PorterDuff.Mode.SRC_ATOP);
-        getSupportActionBar().setHomeAsUpIndicator(upArrow);*/
-
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -130,7 +113,6 @@ public class CountryActivity extends AppCompatActivity {
                         CountriesList.add(countryObj);
                     }
                     adapter.updateModels(CountriesList);
-                    //adapter.notifyDataSetChanged();
 
                     loadingBar.dismiss();
 
@@ -156,13 +138,8 @@ public class CountryActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.country_menu, menu);
 
-        // Associate searchable configuration with the SearchView
-       /* SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));*/
         MenuItem menuItem = menu.findItem(R.id.action_search);
         SearchView searchView = (SearchView) MenuItemCompat.getActionView(menuItem);
-        //searchView.setMaxWidth(Integer.MAX_VALUE);
 
         // listening to search query text change
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {

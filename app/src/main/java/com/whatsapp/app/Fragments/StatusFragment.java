@@ -1,20 +1,16 @@
 package com.whatsapp.app.Fragments;
 
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -53,16 +49,13 @@ import com.squareup.picasso.Picasso;
 import com.whatsapp.app.Activities.ManageStatusActivity;
 import com.whatsapp.app.Activities.StoryActivity;
 import com.whatsapp.app.Adapters.StatusAdapter;
-import com.whatsapp.app.ChatActivity;
 import com.whatsapp.app.Models.Status;
-import com.whatsapp.app.Models.User;
 import com.whatsapp.app.R;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 
 
@@ -362,6 +355,8 @@ public class StatusFragment extends Fragment {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                 if(dataSnapshot.exists()){
+
+                    contactsStatusList.clear();
 
                     for(DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
 

@@ -1,23 +1,34 @@
 package com.whatsapp.app.Activities;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import de.hdodenhof.circleimageview.CircleImageView;
 
 import android.hardware.Camera;
 import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.sinch.android.rtc.PushPair;
 import com.sinch.android.rtc.calling.Call;
 import com.sinch.android.rtc.calling.CallListener;
 import com.sinch.android.rtc.video.VideoCallListener;
 import com.sinch.android.rtc.video.VideoController;
+import com.squareup.picasso.Picasso;
 import com.whatsapp.app.CameraPreview;
 import com.whatsapp.app.R;
 import com.whatsapp.app.Utils.SinchManager;
@@ -30,6 +41,10 @@ public class VideoIncomingCallActivity extends AppCompatActivity {
     ImageView endCallButton,answer;
     LinearLayout remoteViewLI;
     LinearLayout localViewRL;
+    Chronometer chronometer;
+    MediaPlayer mp;
+    TextView callState,remoteUserName;
+    CircleImageView remoteUserProfile;
     //private Camera mCamera;
     //private CameraPreview mPreview;
     //LinearLayout cameraPreview;
@@ -41,10 +56,14 @@ public class VideoIncomingCallActivity extends AppCompatActivity {
 
 
         answer =  findViewById(R.id.answerButton);
+        callState = findViewById(R.id.callState);
+        remoteUserProfile  =findViewById(R.id.remoteUserProfile);
+        remoteUserName = findViewById(R.id.remoteUserName);
         //ImageView decline = (Button) findViewById(R.id.declineButton);
         endCallButton = findViewById(R.id.hangupButton);
         localViewRL = findViewById(R.id.localVideo);
         remoteViewLI = findViewById(R.id.remoteVideo);
+        chronometer = findViewById(R.id.chronometer);
         //cameraPreview = findViewById(R.id.cPreview);
 
        /* try {
@@ -74,6 +93,44 @@ public class VideoIncomingCallActivity extends AppCompatActivity {
 
         handler.postDelayed(r, 1000);*/
 
+        FirebaseDatabase.getInstance().getReference().child("PendingCalls").child("1").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                        if(dataSnapshot.exists()){
+
+                            //String key = d.getKey();
+                            String value = dataSnapshot.getValue().toString();
+
+                            FirebaseDatabase.getInstance().getReference().child("Users").child(value).addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    if(dataSnapshot.exists()){
+
+                                        String name = dataSnapshot.child("name").getValue().toString();
+                                        String imageUrl = dataSnapshot.child("image").getValue().toString();
+
+                                        remoteUserName.setText(name);
+                                        Picasso.get().load(imageUrl).into(remoteUserProfile);
+
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+
         answer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -102,6 +159,8 @@ public class VideoIncomingCallActivity extends AppCompatActivity {
             }
         });
     }
+
+
 /*
     public void chooseCamera() {
 
@@ -161,11 +220,17 @@ public class VideoIncomingCallActivity extends AppCompatActivity {
         @Override
         public void onCallProgressing(Call call) {
             //Ringing
+            playAudio();
+            callState.setVisibility(View.VISIBLE);
         }
 
         @Override
         public void onCallEstablished(Call call) {
             //cameraPreview.setVisibility(View.INVISIBLE);
+            stopAudio();
+            callState.setVisibility(View.INVISIBLE);
+            chronometer.setVisibility(View.VISIBLE);
+            chronometer.start();
             answer.setVisibility(View.GONE);
             remoteViewLI.setVisibility(View.VISIBLE);
             localViewRL.setVisibility(View.VISIBLE);
@@ -174,6 +239,7 @@ public class VideoIncomingCallActivity extends AppCompatActivity {
 
         @Override
         public void onCallEnded(Call endedCall) {
+            stopAudio();
             SinchManager.incomingCallObject = null;
             setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
             VideoController vc = SinchManager.sinchClient.getVideoController();
@@ -210,5 +276,23 @@ public class VideoIncomingCallActivity extends AppCompatActivity {
 
         }
     }
+
+    private void playAudio() {
+
+        mp = MediaPlayer.create(this, R.raw.ring);
+        try{
+            //mp.prepare();
+            mp.start();
+
+        }catch(Exception e){e.printStackTrace();}
+    }
+
+    public void stopAudio() {
+        if (mp != null) {
+            mp.release();
+            mp = null;
+        }
+    }
+
 
 }

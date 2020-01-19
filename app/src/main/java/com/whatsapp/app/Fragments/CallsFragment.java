@@ -20,13 +20,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.annotations.Nullable;
 import com.whatsapp.app.Adapters.CallsAdapter;
-import com.whatsapp.app.MainActivity;
-import com.whatsapp.app.Messages;
 import com.whatsapp.app.Models.Call;
 import com.whatsapp.app.R;
 
 import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -39,13 +36,6 @@ public class CallsFragment extends Fragment {
     String currentUserID;
     private DatabaseReference RootRef;
     private final ArrayList<Call> callsList = new ArrayList<>();
-
-
-    public static final String[] profileUrls = {"https://blog.rackspace.com/wp-content/uploads/2018/09/pumping-iron-arnold-schwarzenegger-1-1108x0-c-default-696x522.jpg",
-            "https://www.rollingstone.com/wp-content/uploads/2018/06/rs-213329-R1247_FEA_Rogen_A.jpg?crop=900:600&width=440",
-            "https://assets.entrepreneur.com/content/3x2/2000/20170118220227-GettyImages-471763092.jpeg",
-            "https://static.ffx.io/images/$zoom_0.238%2C$multiply_1%2C$ratio_1.776846%2C$width_1059%2C$x_0%2C$y_55/t_crop_custom/w_800/q_86%2Cf_auto/cf3f16e35b79207935da03f7b4a7e7d6e484ff71"
-    };
 
     public CallsFragment() {
         // Required empty public constructor
